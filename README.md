@@ -16,12 +16,12 @@ A diagram of the database setup is included in `Coin Collection.pdf`. This diagr
 
 ## Linux
 
-There is a folder called "linux" with files necessary to create the necessary database and run the program. Run the "CreateDatabase.sh" file and it should install all necessary packages (mariadb-client and mariadb-server), create the database, and create a user for the database.
+There is a folder called "linux" with files necessary to create the necessary database and run the program. Run the "CreateDatabase.sh" file and it should install all necessary packages (mariadb-client and mariadb-server), create the database, and create a user for the database, and install the nexessary JDK-15 to run the program.
 
 Once the database is created, simply run "run_linux.sh" and you should be able to start documenting your collection.
 
 ## Windows
 
-At this point this has not been tested on Windows. However, if you know how to create a MySQL Server and install a MySQL Client on your PC, you should be able to run the program.
+At this point this has not been tested on Windows. However, if you know how to create a MySQL Server, install a MySQL Client on your PC, and install JDK 15 on your PC, you should be able to run the program.
 
-The sql file to create the database is included in a folder called "Windows". (It's the same as the file in the "linux" directory.) This file should be all you need to create the database. Once the database is created, you should be able to use the following command to run the program: `".\openjdk-15\bin\java" -cp ".\out\production\Coin Program\" Main` assuming that this command is being run from the base directory of the project.
+The sql file to create the database is included in a folder called "Windows". (It's the same as the file in the "linux" directory.) This file should be all you need to create the database. Once the database is created, you should be able to use the following command to run the program: `java -cp ".\out\production\Coin Program\" Main` assuming that this command is being run from the base directory of the project.
