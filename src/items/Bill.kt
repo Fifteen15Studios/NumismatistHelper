@@ -72,6 +72,7 @@ class Bill{
                         newBill.denomination = results.getDouble("Denomination")
                         newBill.value = results.getDouble("CurValue")
                         newBill.graded = results.getBoolean("Graded")
+                        newBill.serial = results.getString("Serial")
                         newBill.condition = Objects.requireNonNullElse(results.getString("Grade"), "")
                         newBill.error = results.getBoolean("Error")
                         newBill.errorType = Objects.requireNonNullElse(results.getString("ErrorType"), "")
@@ -101,7 +102,7 @@ class Bill{
         val sql = if(editing) {
             "UPDATE Bills SET Country=\"$country\", Type=\"$name\", Yr=$year, " +
                     "Denomination=$denomination, CurValue=$value, Graded=$graded, Grade=\"$condition\", " +
-                    "SeriesLetter=\"$seriesLetter\", Serial=\"$serial\", Signatures=\"$signatures\"" +
+                    "SeriesLetter=\"$seriesLetter\", Serial=\"$serial\", Signatures=\"$signatures\", " +
                     "Error=$error, ErrorType=\"$errorType\", Note=\"$note\", " +
                     "PlateSeriesObv=\"$plateSeriesObv\", PlateSeriesRev=\"$plateSeriesRev\", " +
                     "NotePosition=\"$notePosition\", District=\"$district\", Star=$star\n" +
