@@ -69,6 +69,7 @@ class Bill{
                         newBill.country = Objects.requireNonNullElse(results.getString("Country"), "US")
                         newBill.name = Objects.requireNonNullElse(results.getString("Type"), "")
                         newBill.year = results.getInt("Yr")
+                        newBill.seriesLetter = results.getString("SeriesLetter")
                         newBill.denomination = results.getDouble("Denomination")
                         newBill.value = results.getDouble("CurValue")
                         newBill.graded = results.getBoolean("Graded")
