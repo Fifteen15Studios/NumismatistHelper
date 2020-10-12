@@ -238,10 +238,8 @@ public class AddBillScreen {
         if(errorMessage.equals("")) {
             int rows =  bill.saveToDb(((Main) parent).databaseConnection, editing);
             String message = ((Main) parent).databaseConnection.wasSuccessful(rows);
-            if(!message.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                errorDisplay.setForeground(Color.RED);
-                errorDisplay.setText(message);
 
+            if(message.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
                 // Copy the image to a new location, then use that location
                 if(validObvImg) {
                     String path = imageObvLocationInput.getText();
@@ -317,6 +315,11 @@ public class AddBillScreen {
 
                     return false;
                 }
+            }
+            else {
+                errorDisplay.setForeground(Color.RED);
+                errorDisplay.setText(message);
+                return false;
             }
 
             return true;
