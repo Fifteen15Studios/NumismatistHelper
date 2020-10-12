@@ -74,11 +74,11 @@ public class ItemLocationsWindow extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(),
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        setDefaultServerButton.addActionListener( e -> databaseServerInput.setText(Main.getSettingDatabaseServer()));
-        setDefaultNameButton.addActionListener( e -> databaseNameInput.setText(Main.getSettingDatabaseName()));
-        setDefaultUsernameButton.addActionListener( e -> databaseUsernameInput.setText(Main.getSettingDatabaseUsername()));
-        setDefaultPasswordButton.addActionListener( e -> passwordInput.setText(Main.getSettingDatabasePassword()));
-        setDefaultLocationButton.addActionListener( e -> imagesInput.setText(Main.getSettingImagePath()));
+        setDefaultServerButton.addActionListener( e -> databaseServerInput.setText(Main.DEFAULT_DATABASE_SERVER));
+        setDefaultNameButton.addActionListener( e -> databaseNameInput.setText(Main.DEFAULT_DATABASE_NAME));
+        setDefaultUsernameButton.addActionListener( e -> databaseUsernameInput.setText(Main.DEFAULT_DATABASE_USERNAME));
+        setDefaultPasswordButton.addActionListener( e -> passwordInput.setText(Main.DEFAULT_DATABASE_PASSWORD));
+        setDefaultLocationButton.addActionListener( e -> imagesInput.setText(Main.getDefaultImagesLocation()));
     }
 
     private void onOK() {
