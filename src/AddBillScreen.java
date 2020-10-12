@@ -156,6 +156,7 @@ public class AddBillScreen {
         gradeComboBox.setSelectedItem(bill.getCondition());
         errorCheckBox.setSelected(bill.getError());
         errorTypeInput.setText(bill.getErrorType());
+        seriesLetter.setText(bill.getSeriesLetter());
         starCheck.setSelected(bill.getStar());
         noteInput.setText(bill.getNote());
 
