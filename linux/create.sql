@@ -72,7 +72,7 @@ CREATE TABLE `Coins` (
   `Yr` int(11) NOT NULL,
   `Denomination` decimal(7,2) unsigned NOT NULL,
   `CurValue` decimal(15,2) unsigned DEFAULT NULL,
-  `MintMark` enum('C','CC','D','O','P','S','W') DEFAULT NULL,
+  `MintMark` enum('', 'C','CC','D','O','P','S','W') DEFAULT NULL,
   `Grade` varchar(10) DEFAULT NULL,
   `Error` tinyint(1) DEFAULT '0',
   `ErrorType` varchar(100) DEFAULT NULL,
