@@ -137,8 +137,22 @@ public class CollectionTableScreen {
                     case 1 -> columnData = set.getName();
                     case 2 -> columnData = "" + set.getYear();
                     case 3 -> columnData = "" + set.getCoins().size();
-                    case 4 -> columnData = "" + set.getFaceValue();
-                    case 5 -> columnData = "" + set.getValue();
+                    case 4 -> {
+                        DecimalFormat format = new DecimalFormat();
+                        format.applyPattern("0.00");
+
+                        String value = format.format(set.getFaceValue());
+
+                        columnData = "" + value;
+                    }
+                    case 5 -> {
+                        DecimalFormat format = new DecimalFormat();
+                        format.applyPattern("0.00");
+
+                        String value = format.format(set.getValue());
+
+                        columnData = "" + value;
+                    }
                     case 6 -> columnData = set.getNote();
                 }
                 data[count][j] = columnData;
@@ -280,8 +294,22 @@ public class CollectionTableScreen {
                 switch (j) {
                     case 0 -> columnData = "" +  coin.getId();
                     case 1 -> columnData = coin.toString();
-                    case 2 -> columnData = "" + coin.getDenomination();
-                    case 3 -> columnData = "" + coin.getValue();
+                    case 2 -> {
+                        DecimalFormat format = new DecimalFormat();
+                        format.applyPattern("0.00");
+
+                        String value = format.format(coin.getDenomination());
+
+                        columnData = "" + value;
+                    }
+                    case 3 -> {
+                        DecimalFormat format = new DecimalFormat();
+                        format.applyPattern("0.00");
+
+                        String value = format.format(coin.getValue());
+
+                        columnData = "" + value;
+                    }
                     case 4 -> columnData = coin.getCountry();
                     case 5 -> columnData = coin.getCondition();
                     case 6 -> columnData = coin.getErrorType();
@@ -420,8 +448,22 @@ public class CollectionTableScreen {
                 switch (j) {
                     case 0 -> columnData += bill.getId();
                     case 1 -> columnData = bill.toString();
-                    case 2 -> columnData = "" + bill.getDenomination();
-                    case 3 -> columnData = "" + bill.getValue();
+                    case 2 -> {
+                        DecimalFormat format = new DecimalFormat();
+                        format.applyPattern("0.00");
+
+                        String value = format.format(bill.getDenomination());
+
+                        columnData = "" + value;
+                    }
+                    case 3 -> {
+                        DecimalFormat format = new DecimalFormat();
+                        format.applyPattern("0.00");
+
+                        String value = format.format(bill.getValue());
+
+                        columnData = "" + value;
+                    }
                     case 4 -> columnData = bill.getCountry();
                     case 5 -> columnData = bill.getSignatures();
                     case 6 -> columnData = bill.getCondition();
