@@ -19,6 +19,8 @@ CREATE TABLE `Bills` (
   `Country` varchar(32) NOT NULL DEFAULT 'United States',
   `Type` varchar(100) DEFAULT NULL,
   `Yr` int(11) NOT NULL,
+  `SeriesLetter` varchar(3) DEFAULT NULL,
+  `Serial` varchar(32) DEFAULT NULL,
   `Denomination` decimal(7,2) unsigned NOT NULL,
   `CurValue` decimal(15,2) unsigned DEFAULT NULL,
   `Grade` varchar(10) DEFAULT NULL,
@@ -34,7 +36,6 @@ CREATE TABLE `Bills` (
   `RevImgExt` varchar(10) DEFAULT NULL,
   `Graded` tinyint(1) DEFAULT NULL,
   `Signatures` varchar(255) DEFAULT NULL,
-  `SeriesLetter` varchar(3) DEFAULT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
