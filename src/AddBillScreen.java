@@ -151,7 +151,7 @@ public class AddBillScreen {
         plateSeriesObvInput.setText(bill.getPlateSeriesObv());
         plateSeriesRevInput.setText(bill.getPlateSeriesRev());
         districtInput.setText(bill.getDistrict());
-        noteInput.setText(bill.getNotePosition());
+        notePositionInput.setText(bill.getNotePosition());
         gradedCheckBox.setSelected(bill.getGraded());
         gradeComboBox.setSelectedItem(bill.getCondition());
         errorCheckBox.setSelected(bill.getError());
