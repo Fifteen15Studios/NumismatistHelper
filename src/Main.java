@@ -90,6 +90,10 @@ public class Main extends JFrame {
     public static String getSettingImagePath() {
         Preferences prefs = Preferences.userNodeForPackage(Main.class);
 
+        return prefs.get(SETTING_IMAGE_PATH, getDefaultImagesLocation());
+    }
+
+    public static String getDefaultImagesLocation() {
         String os = System.getProperty("os.name");
         // Get home directory of user
         String imageDirectory = System.getProperty("user.home");
@@ -99,7 +103,7 @@ public class Main extends JFrame {
         else if(os.toLowerCase().contains("linux"))
             imageDirectory += "/Pictures/CoinCollection";
 
-        return prefs.get(SETTING_IMAGE_PATH, imageDirectory);
+        return imageDirectory;
     }
 
     public static String getSettingDatabaseServer() {
