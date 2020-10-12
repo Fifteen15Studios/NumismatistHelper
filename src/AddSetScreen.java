@@ -174,8 +174,12 @@ public class AddSetScreen {
         nameInput.setText(set.getName());
         if(set.getYear() !=0)
             yearInput.setText("" + set.getYear());
+        else
+            yearInput.setText("");
         if(set.getValue() != 0.0)
             valueInput.setText("" + set.getValue());
+        else
+            valueInput.setText("");
         noteInput.setText(set.getNote());
 
         // Set images
