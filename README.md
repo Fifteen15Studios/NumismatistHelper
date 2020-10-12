@@ -10,6 +10,10 @@ This program was created and tested on a Linux variant based on Ubuntu. I have n
 
 I will also add screenshots to this ReadMe in the future.
 
+**NOTE**
+
+For some reason, some things don't seem to work right now when run indepentendly (ie. not run via IntelliJ Idea.) I'm not sure why, but I'll try to figure it out.
+
 # Database
 
 A diagram of the database setup is included in `Coin Collection.pdf`. This diagram was created using https://dbdiagram.io
