@@ -333,8 +333,10 @@ public class AddCoinScreen {
                     errorDisplay.setText(errorMessage);
                 }
             }
-            else
+            else {
                 errorDisplay.setText(successMessage);
+                invalid = true;
+            }
         }
 
         return !invalid;
