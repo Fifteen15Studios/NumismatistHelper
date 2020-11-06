@@ -7,6 +7,8 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
+// TODO: Handle quotes when saving notes in items
+
 public class Main extends JFrame {
 
     static String title = "Coin Collection";
