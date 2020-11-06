@@ -236,7 +236,6 @@ public class CollectionTableScreen {
                             AddSetScreen addSetScreen = new AddSetScreen(parent, selectedSet);
 
                             addSetScreen.setFromCollection(true);
-                            addSetScreen.setEditing(true);
                             ((Main) parent).changeScreen(addSetScreen.getPanel(), "Edit Set");
                         });
                         JMenuItem removeSet = new JMenuItem("Remove from Collection");
@@ -388,7 +387,6 @@ public class CollectionTableScreen {
 
                             addCoinScreen.setCoin(selectedCoin);
                             addCoinScreen.setFromCollection(true);
-                            addCoinScreen.setEditing(true);
                             ((Main) parent).changeScreen(addCoinScreen.getPanel(), "Edit Coin");
                         });
                         JMenuItem removeCoin = new JMenuItem("Remove from Collection");
@@ -545,7 +543,6 @@ public class CollectionTableScreen {
 
                             addBillScreen.setBill(selectedBill);
                             addBillScreen.setFromCollection(true);
-                            addBillScreen.setEditing(true);
                             ((Main) parent).changeScreen(addBillScreen.getPanel(), "Edit Bill");
                         });
                         JMenuItem removeBill = new JMenuItem("Remove from Collection");

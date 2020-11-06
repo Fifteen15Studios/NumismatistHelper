@@ -82,6 +82,27 @@ class Coin
         }
     }
 
+    fun copy() : Coin {
+        val newCoin = Coin()
+
+        newCoin.id = 0
+        newCoin.country = country
+        newCoin.year = year
+        newCoin.denomination = denomination
+        newCoin.mintMark = mintMark
+        newCoin.graded = graded
+        newCoin.condition = condition
+        newCoin.value = value
+        newCoin.note = note
+        newCoin.name = name
+        newCoin.setID = null
+
+        newCoin.obvImgExt = ""
+        newCoin.revImgExt = ""
+
+        return newCoin
+    }
+
     var id = 0
     var country = "US"
     var year = 0
@@ -130,7 +151,7 @@ class Coin
         return string
     }
 
-    fun saveToDb(connection: DatabaseConnection, editing: Boolean = false) : Int {
+    fun saveToDb(connection: DatabaseConnection) : Int {
 
         val sql: String
 
@@ -142,7 +163,7 @@ class Coin
         else
             "" + setID
 
-        if(editing) {
+        if(id != 0) {
             sql = "UPDATE Coins SET Country=\"" + country + "\"" +
                     ",Type=\"" + name + "\"" +
                     ",Yr=" + year.toString() +

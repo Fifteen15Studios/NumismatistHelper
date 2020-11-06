@@ -7,8 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 
 public class AddCoinScreen {
@@ -46,7 +44,6 @@ public class AddCoinScreen {
 
     private final JFrame parent;
 
-    private boolean editing = false;
     private boolean editingSet = false;
     private boolean fromCollection = false;
 
@@ -106,7 +103,7 @@ public class AddCoinScreen {
 
                 setCoin(new Coin());
 
-                editing = false;
+                editingSet = false;
                 if(set != null)
                     parent.setTitle("Add Coin to Set");
                 else
@@ -237,25 +234,15 @@ public class AddCoinScreen {
         }
         else
         {
-            int rows = coin.saveToDb(((Main)parent).databaseConnection, editing);
+            int rows = coin.saveToDb(((Main)parent).databaseConnection);
 
             String successMessage = ((Main)parent).databaseConnection.wasSuccessful(rows);
 
             if(successMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)){
                 errorDisplay.setText("");
-                ResultSet results = ((Main)parent).databaseConnection.runQuery("SELECT LAST_INSERT_ID();");
-                try {
-                    if(results != null) {
-                        results.next();
-                        coin.setId(results.getInt("LAST_INSERT_ID()"));
-                    }
-                }
-                catch (SQLException er) {
-                    er.printStackTrace();
-                }
 
                 // Add to set if necessary
-                if(set != null && !editing)
+                if(set != null && !editingSet)
                     set.addCoin(coin);
 
                 String errorMessage = "";
@@ -346,7 +333,6 @@ public class AddCoinScreen {
         if(set != null) {
             AddSetScreen setScreen = new AddSetScreen(parent, set);
             setScreen.setFromCollection(fromCollection);
-            setScreen.setEditing(editingSet);
             setScreen.setInfo();
 
             ((Main) parent).changeScreen(setScreen.getPanel(), "");
@@ -426,8 +412,8 @@ public class AddCoinScreen {
         }
     }
 
-    void setEditing(boolean editing) {
-        this.editing = editing;
+    void setEditingSet(boolean editing) {
+        this.editingSet = editing;
     }
 
     public void setSet(CoinSet set) {
@@ -447,10 +433,6 @@ public class AddCoinScreen {
 
     public void setFromCollection(boolean fromCollection) {
         this.fromCollection = fromCollection;
-    }
-
-    public void setEditingSet(boolean editingSet) {
-        this.editingSet = editingSet;
     }
 
     private void createUIComponents() {

@@ -99,8 +99,24 @@ class Bill{
         }
     }
 
-    fun saveToDb(connection: DatabaseConnection, editing: Boolean): Int {
-        val sql = if(editing) {
+    fun copy() : Bill {
+        val newBill = Bill()
+
+        newBill.country = country
+        newBill.name = name
+        newBill.year = year
+        newBill.seriesLetter = seriesLetter
+        newBill.denomination = denomination
+        newBill.value = value
+        newBill.graded = graded
+        newBill.condition = condition
+        newBill.note = note
+
+        return newBill
+    }
+
+    fun saveToDb(connection: DatabaseConnection): Int {
+        val sql = if(id != 0) {
             "UPDATE Bills SET Country=\"$country\", Type=\"$name\", Yr=$year, " +
                     "Denomination=$denomination, CurValue=$value, Graded=$graded, Grade=\"$condition\", " +
                     "SeriesLetter=\"$seriesLetter\", Serial=\"$serial\", Signatures=\"$signatures\", " +

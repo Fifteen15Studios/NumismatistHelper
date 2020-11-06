@@ -82,26 +82,71 @@ class CoinSet {
         return value
     }
 
-    fun saveToDb(connection: DatabaseConnection, editing: Boolean = false) : String {
-        val sql: String
-        val returnMessage: String
+    fun copy() : CoinSet {
+        val newSet = CoinSet()
 
-        if(editing) {
+        newSet.id = 0
+        newSet.name  = name
+        newSet.value = value
+        newSet.year = year
+        newSet.note = note
+        newSet.obvImgExt = ""
+        newSet.revImgExt = ""
+
+        for(coin in coins) {
+            val newCoin = coin.copy()
+            newSet.addCoin(newCoin)
+        }
+
+        return newSet
+    }
+
+    fun saveToDb(connection: DatabaseConnection) : String {
+        val sql: String
+        var returnMessage = ""
+
+        if(id != 0) {
+
             sql = "UPDATE Sets SET Name=\"$name\", Yr=$year, CurValue=$value, Note=\"$note\"\n" +
                     "WHERE ID=$id;"
 
-            returnMessage = when (connection.runUpdate(sql)) {
-                0 -> {
-                    DatabaseConnection.NO_CHANGE_MESSAGE
+            var rows = connection.runUpdate(sql)
+            if(rows == -1) {
+                returnMessage = "An error occurred while updating set."
+            }
+            else if (rows > 1) {
+                returnMessage = "Multiple row updated when updating set. This may mean something went wrong"
+            }
+
+            var errors = 0
+
+            // Add coins that have been added
+            for (coin in coins) {
+                coin.setID = id
+
+                rows = coin.saveToDb(connection)
+                if(rows == -1 && errors == 0) {
+                    if(returnMessage != "")
+                        returnMessage += "\n"
+                    returnMessage += "An error occurred while adding one or more coins to the set"
+                    errors++
                 }
-                1 -> {
-                    DatabaseConnection.SUCCESS_MESSAGE
-                }
-                -1 -> {
-                    DatabaseConnection.ERROR_MESSAGE
-                }
-                else -> {
-                    DatabaseConnection.MULTIPLE_ROWS_MESSAGE
+
+            }
+
+            errors = 0
+
+            for (coin in removedCoins) {
+                coin.setID = null
+
+                if(coin.id !=0) {
+                    val coinRows = coin.saveToDb(connection)
+                    if(coinRows == -1 && errors == 0) {
+                        if(returnMessage != "")
+                            returnMessage += "\n"
+                        returnMessage += "An error occurred while removing one or more coins in the set"
+                        errors++
+                    }
                 }
             }
         }
@@ -126,9 +171,7 @@ class CoinSet {
                     for (coin in coins) {
                         coin.setID = id
 
-                        val coinSql = "UPDATE Coins SET SetID=${coin.setID}\n" +
-                                "WHERE ID=${coin.id};"
-                        val coinRows = connection.runUpdate(coinSql)
+                        val coinRows = coin.saveToDb(connection)
                         if(coinRows != 1)
                             errors++
                     }
@@ -137,11 +180,11 @@ class CoinSet {
                     for (coin in removedCoins) {
                         coin.setID = 0
 
-                        val coinSql = "UPDATE Coins SET SetID=null\n" +
-                                "WHERE ID=${coin.id};"
-                        val coinRows = connection.runUpdate(coinSql)
-                        if(coinRows != 1)
-                            errors++
+                        if(coin.id !=0) {
+                            val coinRows = coin.saveToDb(connection)
+                            if (coinRows != 1)
+                                errors++
+                        }
                     }
                 } catch (e: SQLException) {
                     e.printStackTrace()
@@ -195,9 +238,9 @@ class CoinSet {
         coins.add(coin)
     }
 
-    fun removeCoin(coin: Coin) {
+    fun removeCoin(coin: Coin) : Boolean {
         removedCoins.add(coin)
-        coins.remove(coin)
+        return coins.remove(coin)
     }
 
     fun getImagePath(obverse: Boolean) : String {

@@ -38,10 +38,11 @@ public class AddSetScreen {
     private JButton revBrowseButton;
     private JPanel obvPicPanel;
     private JPanel revPicPanel;
+    private JButton anotherSameButton;
+    private JButton setCoinsButton;
 
     private CoinSet set;
 
-    private boolean editing = false;
     private final JFrame parent;
 
     private String obvImageLocation = "";
@@ -73,7 +74,17 @@ public class AddSetScreen {
                 errorDisplay.setForeground(Color.GREEN);
                 errorDisplay.setText("Set Saved!");
 
-                editing = false;
+                parent.setTitle("Add Set");
+            }
+        });
+
+        anotherSameButton.addActionListener( e -> {
+            if(saveSet()) {
+                CoinSet newSet = this.set.copy();
+                setSet(newSet);
+                errorDisplay.setForeground(Color.GREEN);
+                errorDisplay.setText("Set Saved!");
+
                 parent.setTitle("Add Set");
             }
         });
@@ -97,7 +108,7 @@ public class AddSetScreen {
 
         addNewCoinButton.addActionListener( e -> {
             setSetFromInput();
-            showCoinScreen(false, new Coin());
+            showCoinScreen(new Coin());
         });
 
         addExistingCoinButton.addActionListener(e -> {
@@ -117,7 +128,6 @@ public class AddSetScreen {
         setSet(set);
 
         // Add right click listener
-        CoinSet finalSet = this.set;
         coinList.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -139,18 +149,19 @@ public class AddSetScreen {
                         ) {
 
                             coinList.setSelectedIndex(index);
-                            Coin selectedCoin = finalSet.getCoins().get(index);
+                            Coin selectedCoin = getCoin(index);
 
                             // Create right click menu
                             final JPopupMenu coinListRightClickMenu = new JPopupMenu();
                             JMenuItem editCoin = new JMenuItem("Edit");
                             editCoin.addActionListener(e1 -> {
+                                setSetFromInput();
                                 // Show edit coin screen
-                                showCoinScreen(true, selectedCoin);
+                                showCoinScreen(selectedCoin);
                             });
                             JMenuItem removeCoin = new JMenuItem("Remove from Set");
                             removeCoin.addActionListener(e1 ->{
-                                finalSet.removeCoin(selectedCoin);
+                                removeCoin(selectedCoin);
                                 setInfo();
                             });
                             coinListRightClickMenu.add(editCoin);
@@ -163,6 +174,30 @@ public class AddSetScreen {
                 }
             }
         });
+        setCoinsButton.addActionListener(e -> setCoinsToYear());
+    }
+
+    private void setCoinsToYear() {
+        for (Coin coin : set.getCoins()) {
+            try {
+                set.setYear(Integer.parseInt(yearInput.getText()));
+                coin.setYear(set.getYear());
+                setCoinList();
+            }
+            catch (NumberFormatException ex) {
+                errorDisplay.setForeground(Color.RED);
+                errorDisplay.setText("Year format is incorrect. Must be an integer (whole number)");
+            }
+
+        }
+    }
+
+    private Coin getCoin(int index) {
+        return set.getCoins().get(index);
+    }
+
+    private boolean removeCoin(Coin coin) {
+        return set.removeCoin(coin);
     }
 
     public AddSetScreen(JFrame parent) {
@@ -251,10 +286,12 @@ public class AddSetScreen {
         set.setNote(noteInput.getText());
 
         if(errorMessage.equals("")) {
-            String message = set.saveToDb(((Main)parent).databaseConnection, editing);
+            String message = set.saveToDb(((Main)parent).databaseConnection);
 
             // Check for success
-            if(message.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
+            if(message.equals(DatabaseConnection.SUCCESS_MESSAGE) ||
+                message.equals(DatabaseConnection.NO_CHANGE_MESSAGE) ||
+                message.equals("")) {
                 // Copy the image to a new location, then use that location
                 if(validObvImg) {
                     String path = imageObvLocationInput.getText();
@@ -447,15 +484,6 @@ public class AddSetScreen {
         faceValueDisplay.setText("$" + value);
     }
 
-    void setEditing(boolean editing) {
-        this.editing = editing;
-
-        if(editing)
-            parent.setTitle("Edit Set");
-        else
-            parent.setTitle("Add Set");
-    }
-
     public void setSet(CoinSet set) {
         this.set = set;
 
@@ -472,15 +500,16 @@ public class AddSetScreen {
         coinList.invalidate();
     }
 
-    private void showCoinScreen(boolean editing, Coin coin) {
+    private void showCoinScreen(Coin coin) {
         AddCoinScreen addCoinScreen = new AddCoinScreen(parent);
         addCoinScreen.setSet(this.set);
-        addCoinScreen.setEditing(editing);
-        addCoinScreen.setEditingSet(editing);
         addCoinScreen.setFromCollection(fromCollection);
         addCoinScreen.setCoin(coin);
 
-        if(editing)
+        if(set.getCoins().contains(coin))
+            addCoinScreen.setEditingSet(true);
+
+        if(coin.getId() != 0)
             ((Main)parent).changeScreen(addCoinScreen.getPanel(), "Edit New Coin in Set");
         else
             ((Main)parent).changeScreen(addCoinScreen.getPanel(), "Add New Coin to Set");

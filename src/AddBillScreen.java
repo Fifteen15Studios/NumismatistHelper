@@ -49,7 +49,6 @@ public class AddBillScreen {
 
     private final JFrame parent;
 
-    private boolean editing = false;
     private Bill bill;
 
     private String obvImageLocation = "";
@@ -86,7 +85,6 @@ public class AddBillScreen {
                 errorDisplay.setText("Bill saved!");
 
                 setBill(new Bill());
-                setEditing(false);
 
                 parent.setTitle("Add Bill");
             }
@@ -236,7 +234,7 @@ public class AddBillScreen {
         bill.setNote(noteInput.getText());
 
         if(errorMessage.equals("")) {
-            int rows =  bill.saveToDb(((Main) parent).databaseConnection, editing);
+            int rows =  bill.saveToDb(((Main) parent).databaseConnection);
             String message = ((Main) parent).databaseConnection.wasSuccessful(rows);
 
             if(message.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
@@ -329,15 +327,6 @@ public class AddBillScreen {
             errorDisplay.setText(errorMessage);
             return false;
         }
-    }
-
-    void setEditing(boolean editing) {
-        this.editing = editing;
-
-        if(editing)
-            parent.setTitle("Edit Bill");
-        else
-            parent.setTitle("Add Bill");
     }
 
     public void setBill(Bill bill) {
