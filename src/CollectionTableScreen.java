@@ -379,13 +379,21 @@ public class CollectionTableScreen {
                     if(index != -1 ) {
 
                         // Don't error out if totals row selected.
-                        Coin selectedCoin;
+                        Coin selectedCoin = null;
                         try {
-                             selectedCoin = coins.get(index);
+                            int ID = Integer.parseInt((String)coinsTable.getValueAt(index, 0));
+                            // Find the set that has been clicked
+                            for(Coin coin : coins)
+                                if(coin.getId() == ID) {
+                                    selectedCoin = coin;
+                                    break;
+                                }
                         }
                         catch (Exception ex) {
                             return;
                         }
+
+                        final Coin finalCoin = selectedCoin;
 
                         // Create right click menu
                         final JPopupMenu coinListRightClickMenu = new JPopupMenu();
@@ -394,7 +402,7 @@ public class CollectionTableScreen {
                             // Show edit coin screen
                             AddCoinScreen addCoinScreen = new AddCoinScreen(parent);
 
-                            addCoinScreen.setCoin(selectedCoin);
+                            addCoinScreen.setCoin(finalCoin);
                             addCoinScreen.setFromCollection(true);
                             ((Main) parent).changeScreen(addCoinScreen.getPanel(), "Edit Coin");
                         });
@@ -405,7 +413,7 @@ public class CollectionTableScreen {
 
                             if(option == JOptionPane.YES_OPTION)
                             {
-                                selectedCoin.deleteFromDb(((Main)parent).databaseConnection);
+                                finalCoin.deleteFromDb(((Main)parent).databaseConnection);
                                 setCoinsTable();
                             }
                         });
@@ -535,13 +543,21 @@ public class CollectionTableScreen {
                     if(index != -1 ) {
 
                         // Don't error out if totals row selected
-                        Bill selectedBill;
+                        Bill selectedBill = null;
                         try {
-                            selectedBill = bills.get(index);
+                            int ID = Integer.parseInt((String)billsTable.getValueAt(index, 0));
+                            // Find the set that has been clicked
+                            for(Bill bill : bills)
+                                if(bill.getId() == ID) {
+                                    selectedBill = bill;
+                                    break;
+                                }
                         }
                         catch (Exception ex) {
                             return;
                         }
+
+                        final Bill finalBill = selectedBill;
 
                         // Create right click menu
                         final JPopupMenu coinListRightClickMenu = new JPopupMenu();
@@ -550,7 +566,7 @@ public class CollectionTableScreen {
                             // Show edit bill screen
                             AddBillScreen addBillScreen = new AddBillScreen(parent);
 
-                            addBillScreen.setBill(selectedBill);
+                            addBillScreen.setBill(finalBill);
                             addBillScreen.setFromCollection(true);
                             ((Main) parent).changeScreen(addBillScreen.getPanel(), "Edit Bill");
                         });
@@ -561,7 +577,7 @@ public class CollectionTableScreen {
 
                             if(option == JOptionPane.YES_OPTION)
                             {
-                                selectedBill.deleteFromDb(((Main)parent).databaseConnection);
+                                finalBill.deleteFromDb(((Main)parent).databaseConnection);
                                 setBillsTable();
                             }
                         });
