@@ -220,20 +220,29 @@ public class CollectionTableScreen {
                     if(index != -1 ) {
 
                         // Don't error out if totals row selected
-                        CoinSet selectedSet;
+                        CoinSet selectedSet = null;
                         try {
-                            selectedSet = sets.get(index);
+                            // Find the ID of the set that has been clicked
+                            int ID = Integer.parseInt((String)setsTable.getValueAt(index, 0));
+                            // Find the set that has been clicked
+                            for(CoinSet set : sets)
+                                if(set.getId() == ID) {
+                                    selectedSet = set;
+                                    break;
+                                }
                         }
                         catch (Exception ex) {
                             return;
                         }
+
+                        final CoinSet finalSet = selectedSet;
 
                         // Create right click menu
                         final JPopupMenu coinListRightClickMenu = new JPopupMenu();
                         JMenuItem editSet = new JMenuItem("Edit");
                         editSet.addActionListener(e1 -> {
                             // Show edit set screen
-                            AddSetScreen addSetScreen = new AddSetScreen(parent, selectedSet);
+                            AddSetScreen addSetScreen = new AddSetScreen(parent, finalSet);
 
                             addSetScreen.setFromCollection(true);
                             ((Main) parent).changeScreen(addSetScreen.getPanel(), "Edit Set");
@@ -245,7 +254,7 @@ public class CollectionTableScreen {
 
                             if(option == JOptionPane.YES_OPTION)
                             {
-                                selectedSet.deleteFromDb(((Main)parent).databaseConnection);
+                                finalSet.deleteFromDb(((Main)parent).databaseConnection);
                                 setSetsTable();
                             }
                         });
