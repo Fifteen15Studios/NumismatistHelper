@@ -22,7 +22,7 @@ The database is pretty straight forward, with very little complication involved.
 
 There is a folder called "linux" with files necessary to create the necessary database and run the program. Run the "CreateDatabase.sh" file and it should install all necessary packages (mariadb-client and mariadb-server), create the database, create a user for the database, and install the necessary JDK-15 to run the program.
 
-Once the database is created, simply run "CoinCollection.jar" and you should be able to start documenting your collection.
+Once the database is created, simply run `CoinCollection.jar` and you should be able to start documenting your collection.
 
 ## Windows
 
