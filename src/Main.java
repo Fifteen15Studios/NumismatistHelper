@@ -39,6 +39,14 @@ public class Main extends JFrame {
         void onResize(int width, int height);
     }
 
+    public static boolean copyFile(File scr, String dest) {
+        return copyFile(scr, new File(dest));
+    }
+
+    public static boolean copyFile(String scr, File dest) {
+        return copyFile(new File(scr), dest);
+    }
+
     public static boolean copyFile(String scr, String dest) {
         return copyFile(new File(scr), new File(dest));
     }
