@@ -336,7 +336,7 @@ public class Main extends JFrame {
 
             ItemLocationsWindow itemLocationsWindow = new ItemLocationsWindow(this);
             itemLocationsWindow.pack();
-            itemLocationsWindow.setVisible(true);super.setVisible(b);
+            itemLocationsWindow.setVisible(true);
         }
     }
 
