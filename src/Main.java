@@ -294,7 +294,7 @@ public class Main extends JFrame {
     public void changeScreen(JPanel newPanel, String title) {
         setContentPane(newPanel);
 
-        String newTitle = this.getAppName();
+        String newTitle = getAppName();
 
         if(!title.equals(""))
             newTitle += " - " + title;
