@@ -7,8 +7,6 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
-// TODO: Handle quotes when saving notes in items
-
 public class Main extends JFrame {
 
     static String title = "Coin Collection";
@@ -75,6 +73,30 @@ public class Main extends JFrame {
         }
 
         return true;
+    }
+
+    public static String escapeForJava(String value)
+    {
+        StringBuilder builder = new StringBuilder();
+
+        for( char c : value.toCharArray() )
+        {
+            if( c == '\'' )
+                builder.append( "\\'" );
+            else if ( c == '\"' )
+                builder.append( "\\\"" );
+            else if( c == '\r' )
+                builder.append( "\\r" );
+            else if( c == '\n' )
+                builder.append( "\\n" );
+            else if( c == '\t' )
+                builder.append( "\\t" );
+            else if( c < 32 || c >= 127 )
+                builder.append( String.format( "\\u%04x", (int)c ) );
+            else
+                builder.append( c );
+        }
+        return builder.toString();
     }
 
     /* Requires JRE 7, Java 1.7

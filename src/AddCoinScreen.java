@@ -225,7 +225,7 @@ public class AddCoinScreen {
         else
             coin.setErrorType("");
 
-        coin.setNote(noteInput.getText());
+        coin.setNote(Main.escapeForJava(noteInput.getText()));
 
         // If some fields contain invalid data
         if(invalid) {

@@ -231,7 +231,7 @@ public class AddBillScreen {
 
         bill.setStar(starCheck.isSelected());
 
-        bill.setNote(noteInput.getText());
+        bill.setNote(Main.escapeForJava(noteInput.getText()));
 
         if(errorMessage.equals("")) {
             int rows =  bill.saveToDb(((Main) parent).databaseConnection);

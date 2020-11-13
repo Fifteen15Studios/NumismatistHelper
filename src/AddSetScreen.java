@@ -13,7 +13,6 @@ import java.text.DecimalFormat;
 
 public class AddSetScreen {
 
-
     private JTextField nameInput;
     private JButton cancelButton;
     private JButton OKButton;
@@ -248,7 +247,7 @@ public class AddSetScreen {
 
         }
 
-        set.setNote(noteInput.getText());
+        set.setNote(Main.escapeForJava(noteInput.getText()));
     }
 
     boolean saveSet() {
@@ -283,7 +282,7 @@ public class AddSetScreen {
         else
             set.setValue(0.0);
 
-        set.setNote(noteInput.getText());
+        set.setNote(Main.escapeForJava(noteInput.getText()));
 
         if(errorMessage.equals("")) {
             String message = set.saveToDb(((Main)parent).databaseConnection);
