@@ -154,7 +154,18 @@ public class Main extends JFrame {
     public Main() {
         setContentPane(contentPane);
 
-        setIconImage(new ImageIcon( "icon.png").getImage());
+        try {
+            // Get icon from file
+            ImageIcon icon = new ImageIcon("icon.png");
+            // If file doesn't exist, try to get from resources
+            if (icon.getIconHeight() == -1)
+                icon = new ImageIcon(getClass().getResource("/Images/icon.png"));
+            setIconImage(icon.getImage());
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
         setMinimumSize(new Dimension(800,600));
 
         setTitle("Coin Collection");
