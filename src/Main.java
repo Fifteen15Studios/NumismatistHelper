@@ -199,6 +199,17 @@ public class Main extends JFrame {
         // Hide these buttons until they are ready
         viewCollectionTreeButton.setVisible(false);
         viewTotalValuesButton.setVisible(false);
+
+        // Close the database connection when program closes
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
+        {
+            try {
+                    databaseConnection.getStatement().close();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+        }, "Shutdown-thread"));
     }
 
     private void addMenu() {
