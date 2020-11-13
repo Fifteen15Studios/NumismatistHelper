@@ -238,7 +238,16 @@ public class CollectionTableScreen {
                         final CoinSet finalSet = selectedSet;
 
                         // Create right click menu
-                        final JPopupMenu coinListRightClickMenu = new JPopupMenu();
+                        final JPopupMenu setListRightClickMenu = new JPopupMenu();
+                        JMenuItem copy = new JMenuItem("Copy");
+                        // Create copy item
+                        copy.addActionListener(e1 -> {
+                            // Show edit set screen
+                            AddSetScreen addSetScreen = new AddSetScreen(parent, finalSet.copy());
+
+                            addSetScreen.setFromCollection(true);
+                            ((Main) parent).changeScreen(addSetScreen.getPanel(), "New Set");
+                        });
                         JMenuItem editSet = new JMenuItem("Edit");
                         editSet.addActionListener(e1 -> {
                             // Show edit set screen
@@ -258,11 +267,12 @@ public class CollectionTableScreen {
                                 setSetsTable();
                             }
                         });
-                        coinListRightClickMenu.add(editSet);
-                        coinListRightClickMenu.add(removeSet);
+                        setListRightClickMenu.add(editSet);
+                        setListRightClickMenu.add(copy);
+                        setListRightClickMenu.add(removeSet);
 
                         // Show the menu at the location of the click
-                        coinListRightClickMenu.show(setsTable, e.getPoint().x, e.getPoint().y);
+                        setListRightClickMenu.show(setsTable, e.getPoint().x, e.getPoint().y);
                     }
                 }
             }
@@ -397,6 +407,16 @@ public class CollectionTableScreen {
 
                         // Create right click menu
                         final JPopupMenu coinListRightClickMenu = new JPopupMenu();
+                        // Add copy item
+                        JMenuItem copy = new JMenuItem("Copy");
+                        copy.addActionListener( e1 -> {
+                            // Show edit coin screen
+                            AddCoinScreen addCoinScreen = new AddCoinScreen(parent);
+
+                            addCoinScreen.setCoin(finalCoin.copy());
+                            addCoinScreen.setFromCollection(true);
+                            ((Main) parent).changeScreen(addCoinScreen.getPanel(), "New Coin");
+                        });
                         JMenuItem editCoin = new JMenuItem("Edit");
                         editCoin.addActionListener(e1 -> {
                             // Show edit coin screen
@@ -418,6 +438,7 @@ public class CollectionTableScreen {
                             }
                         });
                         coinListRightClickMenu.add(editCoin);
+                        coinListRightClickMenu.add(copy);
                         coinListRightClickMenu.add(removeCoin);
 
                         // Show the menu at the location of the click
@@ -560,7 +581,16 @@ public class CollectionTableScreen {
                         final Bill finalBill = selectedBill;
 
                         // Create right click menu
-                        final JPopupMenu coinListRightClickMenu = new JPopupMenu();
+                        final JPopupMenu billListRightClickMenu = new JPopupMenu();
+                        JMenuItem copy = new JMenuItem("Copy");
+                        copy.addActionListener(e1 -> {
+                            // Show edit bill screen
+                            AddBillScreen addBillScreen = new AddBillScreen(parent);
+
+                            addBillScreen.setBill(finalBill.copy());
+                            addBillScreen.setFromCollection(true);
+                            ((Main) parent).changeScreen(addBillScreen.getPanel(), "Edit Bill");
+                        });
                         JMenuItem editBill = new JMenuItem("Edit");
                         editBill.addActionListener(e1 -> {
                             // Show edit bill screen
@@ -581,11 +611,12 @@ public class CollectionTableScreen {
                                 setBillsTable();
                             }
                         });
-                        coinListRightClickMenu.add(editBill);
-                        coinListRightClickMenu.add(removeBill);
+                        billListRightClickMenu.add(editBill);
+                        billListRightClickMenu.add(copy);
+                        billListRightClickMenu.add(removeBill);
 
                         // Show the menu at the location of the click
-                        coinListRightClickMenu.show(billsTable, e.getPoint().x, e.getPoint().y);
+                        billListRightClickMenu.show(billsTable, e.getPoint().x, e.getPoint().y);
                     }
                 }
             }
