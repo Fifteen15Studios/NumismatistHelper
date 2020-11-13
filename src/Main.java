@@ -9,7 +9,7 @@ import java.util.prefs.Preferences;
 
 public class Main extends JFrame {
 
-    static String title = "Coin Collection";
+    static String app_name = "Coin Collection";
     static String version = "1.0";
 
     static final String DEFAULT_DATABASE_SERVER = "localhost";
@@ -168,7 +168,7 @@ public class Main extends JFrame {
 
         setMinimumSize(new Dimension(800,600));
 
-        setTitle("Coin Collection");
+        setTitle(app_name);
 
         addMenu();
 
@@ -279,11 +279,19 @@ public class Main extends JFrame {
         dispose();
     }
 
+    public static String getAppName() {
+        return app_name;
+    }
+
     public void changeScreen(JPanel newPanel, String title) {
         setContentPane(newPanel);
 
+        String newTitle = this.getAppName();
+
         if(!title.equals(""))
-            setTitle(title);
+            newTitle += " - " + title;
+
+        setTitle(newTitle);
 
         revalidate();
     }

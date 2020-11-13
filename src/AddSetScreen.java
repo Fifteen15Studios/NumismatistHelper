@@ -398,7 +398,7 @@ public class AddSetScreen {
             ((Main) parent).changeScreen(collectionTableScreen.getPanel(), "Collection");
         }
         else
-            ((Main) parent).changeScreen(((Main) parent).getPanel(), "Coin Collection");
+            ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
     }
 
     void addCoin(Coin newCoin) {

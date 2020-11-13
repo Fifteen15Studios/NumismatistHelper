@@ -627,7 +627,7 @@ public class CollectionTableScreen {
     }
 
     private void goHome() {
-        ((Main) parent).changeScreen(((Main) parent).getPanel(), "Coin Collection");
+        ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
     }
 
     private void export(String path) {

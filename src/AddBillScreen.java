@@ -347,7 +347,7 @@ public class AddBillScreen {
             ((Main) parent).changeScreen(collectionTableScreen.getPanel(), "Collection");
         }
         else
-            ((Main) parent).changeScreen(((Main) parent).getPanel(), Main.title);
+            ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
     }
 
     void addImage(String pathToImage, boolean obverse) {

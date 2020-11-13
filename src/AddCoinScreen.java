@@ -343,7 +343,7 @@ public class AddCoinScreen {
             ((Main) parent).changeScreen(collectionTableScreen.getPanel(), "Collection");
         }
         else {
-            ((Main) parent).changeScreen(((Main) parent).getPanel(), "Coin Collection");
+            ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
         }
     }
 
