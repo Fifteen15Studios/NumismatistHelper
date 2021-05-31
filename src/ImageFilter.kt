@@ -3,7 +3,7 @@ import javax.swing.filechooser.FileFilter
 
 object ImageExtensions {
 
-    val ACCEPTABLE_EXTENSIONS = arrayOf("jpeg", "jpg", "gif", "tiff", "tif", "png")
+    val ACCEPTABLE_EXTENSIONS = arrayOf("bitmap",  "bmp", "gif", "jpeg", "jpg", "png", "tif", "tiff" )
     /*
     * Get the extension of a file.
     */

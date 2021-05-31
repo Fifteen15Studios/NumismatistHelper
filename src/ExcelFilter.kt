@@ -3,7 +3,7 @@ import javax.swing.filechooser.FileFilter
 
 object ExcelExtensions {
 
-    val ACCEPTABLE_EXTENSIONS = arrayOf("xls", "xlsx", "csv")
+    val ACCEPTABLE_EXTENSIONS = arrayOf("csv", "xls", "xlsx")
     /*
     * Get the extension of a file.
     */
