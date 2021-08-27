@@ -1,6 +1,6 @@
 # CoinCollection
 
-This is a program that I designed to document my collection of Coins, Coin Sets, and Bank Notes (Dollar Bills.) It uses a MySQL database, and a Java/Kotlin program.
+This is a program that I designed to document my collection of Coins, Coin Sets, and Bank Notes (Dollar Bills.) It uses a self hosted MySQL database, and a Java/Kotlin program. 
 
 Coins, bills, and coin sets can be added to the collection, and then the collection can be viewed in a table format (like Excel.) these tables can also be exported to an xls, xlsx, or csv file for later use.
 
