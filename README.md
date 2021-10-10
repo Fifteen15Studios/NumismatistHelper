@@ -24,7 +24,7 @@ this for data that you rely on.
 
 ## Multiple countries and currencies
 
-The database supports multiple countries and their currencies, so regardless of how diverse your collection is, it will still be able to be properly  
+The database supports multiple countries and their currencies, so regardless of how diverse your collection is, it will still be able to be properly 
 documented and displayed. You can even add new countries and currencies if something is missing. 
 (Currently this has to be done at the database level, but future versions will include this functionality in app.)
 
