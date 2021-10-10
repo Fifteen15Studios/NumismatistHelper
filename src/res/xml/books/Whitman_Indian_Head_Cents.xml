@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+
+<Book
+    title="Indian Head Cents"
+    startYear="1857"
+    endYear="1909"
+    denomination=".01">
+    <Page>
+        <Row>
+            <Slot
+                line1="1857"
+                line2="17.5 M"/>
+            <Slot
+                line1="1858"
+                line2="Large Letters"/>
+            <Slot
+                line1="1858"
+                line2="Small Letters"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1859"
+                line2="36.4 M"/>
+            <Slot
+                line1="1860"
+                line2="20.6 M"/>
+            <Slot
+                line1="1861"
+                line2="10.1 M"/>
+            <Slot
+                line1="1862"
+                line2="28.1 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1863"
+                line2="49.8 M"/>
+            <Slot
+                line1="1864"
+                line2="13.7 M"/>
+        </Row>
+    </Page>
+    <Page>
+        <Row>
+            <Slot
+                line1="1864 Bronze"
+                line2="39.2 M"/>
+            <Slot
+                line1="1864-L"
+                line2="39.2 M"/>
+            <Slot
+                line1="1865"
+                line2="35.4 M"/>
+            <Slot
+                line1="1866"
+                line2="9.8 M"/>
+            <Slot
+                line1="1867"
+                line2="9.8 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1868"
+                line2="10.3 M"/>
+            <Slot
+                line1="1869"
+                line2="6.4 M"/>
+            <Slot
+                line1="1870"
+                line2="5.3 M"/>
+            <Slot
+                line1="1871"
+                line2="3.9 M"/>
+            <Slot
+                line1="1872"
+                line2="4 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1873"
+                line2="11.7 M"/>
+            <Slot
+                line1="1874"
+                line2="14.2 M"/>
+            <Slot
+                line1="1875"
+                line2="13.5 M"/>
+            <Slot
+                line1="1876"
+                line2="7.9 M"/>
+            <Slot
+                line1="1877"
+                line2="853 k"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1878"
+                line2="5.8 M"/>
+            <Slot
+                line1="1879"
+                line2="16.2 M"/>
+            <Slot
+                line1="1880"
+                line2="39 M"/>
+            <Slot
+                line1="1881"
+                line2="39.2 M"/>
+            <Slot
+                line1="1882"
+                line2="38.6 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1883"
+                line2="45.6 M"/>
+            <Slot
+                line1="1884"
+                line2="23.3 M"/>
+            <Slot
+                line1="1885"
+                line2="11.8 M"/>
+            <Slot
+                line1="1886"
+                line2="17.7 M"/>
+            <Slot
+                line1="1887"
+                line2="45.2 M"/>
+        </Row>
+    </Page>
+    <Page>
+        <Row>
+            <Slot
+                line1="1888"
+                line2="37.5 M"/>
+            <Slot
+                line1="1889"
+                line2="48.9 M"/>
+            <Slot
+                line1="1890"
+                line2="57.2 M"/>
+            <Slot
+                line1="1891"
+                line2="57.2 M"/>
+            <Slot
+                line1="1892"
+                line2="37.6 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1893"
+                line2="46.6 M"/>
+            <Slot
+                line1="1894"
+                line2="16.8 M"/>
+            <Slot
+                line1="1895"
+                line2="38.3 M"/>
+            <Slot
+                line1="1896"
+                line2="39.1 M"/>
+            <Slot
+                line1="1897"
+                line2="50.5 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1898"
+                line2="49.8 M"/>
+            <Slot
+                line1="1899"
+                line2="536. M"/>
+            <Slot
+                line1="1900"
+                line2="66.8 M"/>
+            <Slot
+                line1="1901"
+                line2="79.6 M"/>
+            <Slot
+                line1="1902"
+                line2="87.4 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1903"
+                line2="85.1 M"/>
+            <Slot
+                line1="1904"
+                line2="61.3 M"/>
+            <Slot
+                line1="1905"
+                line2="80.7 M"/>
+            <Slot
+                line1="1906"
+                line2="96 M"/>
+            <Slot
+                line1="1907"
+                line2="108.1 M"/>
+        </Row>
+        <Row>
+            <Slot
+                line1="1908"
+                line2="32.3 M"/>
+            <Slot
+                line1="1908-S"
+                line2="1.1 M"/>
+            <Slot
+                line1="1909"
+                line2="14.4 M"/>
+            <Slot
+                line1="1909-S"
+                line2="309 K"/>
+        </Row>
+    </Page>
+</Book>

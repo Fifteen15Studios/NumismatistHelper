@@ -19,8 +19,8 @@ object ImageExtensions {
 }
 
 class ImageFilter : FileFilter() {
-    override fun accept(f: File?): Boolean {
-        if (f!!.isDirectory) {
+    override fun accept(f: File): Boolean {
+        if (f.isDirectory) {
             return true
         }
 
@@ -36,7 +36,7 @@ class ImageFilter : FileFilter() {
         for((count, extension) in ImageExtensions.ACCEPTABLE_EXTENSIONS.withIndex()) {
             if (count > 0)
                 string += ", "
-            string += ".$extension"
+            string += "*.$extension"
         }
 
         string += ")"

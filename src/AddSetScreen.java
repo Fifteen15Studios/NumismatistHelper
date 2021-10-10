@@ -1,17 +1,22 @@
-import items.Coin;
-import items.CoinSet;
-import items.DatabaseConnection;
+import items.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 
-public class AddSetScreen {
+import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+
+public class AddSetScreen extends AddSetItemScreen {
 
     private JTextField nameInput;
     private JButton cancelButton;
@@ -19,14 +24,14 @@ public class AddSetScreen {
     private JTextField yearInput;
     private JTextField valueInput;
     private JLabel faceValueDisplay;
-    private JButton addNewCoinButton;
-    private JButton addExistingCoinButton;
+    private JButton addNewButton;
+    private JButton addExistingButton;
     private JList coinList;
-    private DefaultListModel listModel;
+    private final DefaultListModel listModel;
     private JPanel panel;
     private JTextArea noteInput;
     private JTextArea errorDisplay;
-    private JButton addAnotherButton;
+    private JButton saveNewButton;
     private JTextField imageObvLocationInput;
     private JButton obvSetButton;
     private JButton obvBrowseButton;
@@ -37,65 +42,79 @@ public class AddSetScreen {
     private JButton revBrowseButton;
     private JPanel obvPicPanel;
     private JPanel revPicPanel;
-    private JButton anotherSameButton;
     private JButton setCoinsButton;
+    private JButton saveCopyButton;
+    private JComboBox locationDropDown;
+    private JButton addContainerButton;
+    private JScrollPane scrollPane;
 
-    private CoinSet set;
+    private Set originalSet = new Set();
+    private Set set = new Set();
 
-    private final JFrame parent;
+    public AddSetScreen(JFrame parent) {
+        this(parent, new Set());
+    }
 
-    private String obvImageLocation = "";
-    private String revImageLocation = "";
+    public AddSetScreen(JFrame parent, Set set) {
+        super(parent);
 
-    private boolean validObvImg = false;
-    private boolean validRevImg = false;
+        setReturnTab(TAB_SETS);
 
-    private boolean fromCollection = false;
+        if(set == null)
+            set = new Set();
 
-    public AddSetScreen(JFrame parent, CoinSet set) {
-        this.parent = parent;
+        originalSet = set.copy();
+
+        api = ((Main) parent).api;
+
+        setImageObvLocationInput(imageObvLocationInput);
+        setImageRevLocationInput(imageRevLocationInput);
+
+        setObvPicPanel(obvPicPanel);
+        setRevPicPanel(revPicPanel);
 
         listModel = new DefaultListModel();
 
-        cancelButton.addActionListener(e -> goHome());
+        // Restrict input
+        ((PlainDocument) yearInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getCurrentYearFilter());
+        ((PlainDocument) valueInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getValueFilter());
 
-        OKButton.addActionListener(e -> {
+        ComboBoxHelper.setContainerList(locationDropDown, api, addContainerButton, parent);
 
-            if(saveSet()) {
-                this.set.getRemovedCoins().clear();
-                goHome();
+        cancelButton.addActionListener(e -> {
+            // TODO: I shouldn't have to go through this
+            // Find items that were added to the set and remove them
+            ArrayList<SetItem> removeItems = new ArrayList<>();
+            for(SetItem item : this.set.getItems()) {
+                if(!originalSet.getItems().contains(item))
+                    removeItems.add(item);
             }
-        });
+            for(SetItem item : removeItems)
+                this.set.removeItem(item);
 
-        addAnotherButton.addActionListener(e -> {
-            if(saveSet()) {
-                setSet(new CoinSet());
-                errorDisplay.setForeground(Color.GREEN);
-                errorDisplay.setText("Set Saved!");
-
-                parent.setTitle("Add Set");
+            // Find items that were originally in the set but are now missing and re-add them
+            for(SetItem item : originalSet.getItems() ) {
+                if(!this.set.getItems().contains(item)) {
+                    this.set.addItem(item);
+                }
             }
-        });
 
-        anotherSameButton.addActionListener( e -> {
-            if(saveSet()) {
-                CoinSet newSet = this.set.copy();
-                setSet(newSet);
-                errorDisplay.setForeground(Color.GREEN);
-                errorDisplay.setText("Set Saved!");
-
-                parent.setTitle("Add Set");
-            }
+            // Set all other properties back to their original values
+            setSet(originalSet);
+            goHome();
         });
+        OKButton.addActionListener(e -> saveSet(getBUTTON_OK()));
+        saveNewButton.addActionListener(e -> saveSet(getBUTTON_SAVE_NEW()));
+        saveCopyButton.addActionListener( e -> saveSet(getBUTTON_SAVE_COPY()));
 
         obvSetButton.addActionListener(e -> {
-            obvImageLocation = imageObvLocationInput.getText();
-            addImage(obvImageLocation, true);
+            setObvImageLocation(imageObvLocationInput.getText());
+            addImage(getObvImageLocation(), true);
         });
 
         revSetButton.addActionListener(e -> {
-            revImageLocation = imageRevLocationInput.getText();
-            addImage(revImageLocation, true);
+            setRevImageLocation(imageRevLocationInput.getText());
+            addImage(getRevImageLocation(), true);
         });
 
 
@@ -105,26 +124,71 @@ public class AddSetScreen {
         obvRemoveButton.addActionListener(e -> removeImage(true));
         revRemoveButton.addActionListener(e -> removeImage(false));
 
-        addNewCoinButton.addActionListener( e -> {
-            setSetFromInput();
-            showCoinScreen(new Coin());
+        addNewButton.addActionListener(e -> {
+
+            //Create the popup menu
+            final JPopupMenu popup = new JPopupMenu();
+            popup.add(new JMenuItem(new AbstractAction(Main.getString("addSet_menu_newCoin")) {
+                public void actionPerformed(ActionEvent e) {
+                    setSetFromInput();
+                    showCoinScreen(new Coin());
+                }
+            }));
+            popup.add(new JMenuItem(new AbstractAction(Main.getString("addSet_menu_newBill")) {
+                public void actionPerformed(ActionEvent e) {
+                    setSetFromInput();
+                    showBillScreen(new Bill());
+                }
+            }));
+            popup.add(new JMenuItem(new AbstractAction(Main.getString("addSet_menu_newSet")) {
+                public void actionPerformed(ActionEvent e) {
+                    setSetFromInput();
+                    showSetScreen(new Set());
+                }
+            }));
+
+            popup.show(addNewButton, 0, addNewButton.getHeight());
         });
 
-        addExistingCoinButton.addActionListener(e -> {
+        addExistingButton.addActionListener(e -> {
             setSetFromInput();
-            ExistingCoinDialog existingCoinDialog = new ExistingCoinDialog(parent, this.set);
-            Coin newCoin = existingCoinDialog.showDialog();
 
-            if(newCoin != null && !this.set.getCoins().contains(newCoin))
-                addCoin(newCoin);
+            JDialog existingItemDialog = new JDialog(parent);
+            CollectionTableScreen collectionTableScreen = new CollectionTableScreen(parent, existingItemDialog);
+            collectionTableScreen.setSet(this.set);
+
+            String name;
+
+            if(this.set.getName().equals(""))
+                name = Main.getString("property_set_toString").toLowerCase();
+            else
+                name = this.set.getName();
+
+            existingItemDialog.add(collectionTableScreen.getPanel());
+            existingItemDialog.pack();
+            existingItemDialog.setTitle(MessageFormat.format(Main.getString("addSet_popUp_title"), name));
+            existingItemDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            existingItemDialog.setSize(800,600);
+            existingItemDialog.setMinimumSize(new Dimension(400,300));
+            existingItemDialog.setLocationRelativeTo(parent);
+            existingItemDialog.setModal(true);
+            existingItemDialog.setVisible(true);
+
+            // Runs when dialog closed
+            if(collectionTableScreen.selectedItem != null)
+                getSet().getItems().add(collectionTableScreen.selectedItem);
+                //getSet().addItem(collectionTableScreen.selectedItem);
+            setInfo();
+
+            // Reset default button, as it seems to get lost after closing the dialog
+            parent.getRootPane().setDefaultButton(OKButton);
         });
 
         coinList.setLayoutOrientation(JList.VERTICAL);
 
-        if(set == null)
-            set = new CoinSet();
-
         setSet(set);
+
+        setInfo();
 
         // Add right click listener
         coinList.addMouseListener(new MouseAdapter() {
@@ -142,25 +206,30 @@ public class AddSetScreen {
                         int maxX = selectedCell.x + selectedCell.width;
                         int maxY = selectedCell.y + selectedCell.height;
 
-                        // If clicked inside of a cell
+                        // If clicked in a cell
                         if ((e.getX() > selectedCell.getX()) && (e.getX() < maxX) &&
                                 (e.getY() > selectedCell.getY()) && (e.getY() < maxY)
                         ) {
 
                             coinList.setSelectedIndex(index);
-                            Coin selectedCoin = getCoin(index);
+                            SetItem selectedItem = getItem(index);
 
                             // Create right click menu
                             final JPopupMenu coinListRightClickMenu = new JPopupMenu();
-                            JMenuItem editCoin = new JMenuItem("Edit");
+                            JMenuItem editCoin = new JMenuItem(Main.getString("addSet_rtClickItem_edit"));
                             editCoin.addActionListener(e1 -> {
                                 setSetFromInput();
-                                // Show edit coin screen
-                                showCoinScreen(selectedCoin);
+                                // Show edit screen
+                                if(selectedItem instanceof Coin)
+                                    showCoinScreen((Coin)selectedItem);
+                                else if(selectedItem instanceof Bill)
+                                    showBillScreen((Bill) selectedItem);
+                                else
+                                    showSetScreen((Set) selectedItem);
                             });
-                            JMenuItem removeCoin = new JMenuItem("Remove from Set");
+                            JMenuItem removeCoin = new JMenuItem(Main.getString("addSet_rtClickItem_remove"));
                             removeCoin.addActionListener(e1 ->{
-                                removeCoin(selectedCoin);
+                                removeItem(selectedItem);
                                 setInfo();
                             });
                             coinListRightClickMenu.add(editCoin);
@@ -174,39 +243,39 @@ public class AddSetScreen {
             }
         });
         setCoinsButton.addActionListener(e -> setCoinsToYear());
+
+        parent.getRootPane().setDefaultButton(OKButton);
+        // Set initial focus
+        SwingUtilities.invokeLater(() -> nameInput.requestFocus());
     }
 
     private void setCoinsToYear() {
-        for (Coin coin : set.getCoins()) {
+        for (SetItem item : set.getItems()) {
             try {
                 set.setYear(Integer.parseInt(yearInput.getText()));
-                coin.setYear(set.getYear());
+                item.setYear(set.getYear());
                 setCoinList();
             }
             catch (NumberFormatException ex) {
-                errorDisplay.setForeground(Color.RED);
-                errorDisplay.setText("Year format is incorrect. Must be an integer (whole number)");
+                errorDisplay.setForeground(Main.COLOR_ERROR);
+                errorDisplay.setText(Main.getString("Year cannot be blank."));
             }
 
         }
     }
 
-    private Coin getCoin(int index) {
-        return set.getCoins().get(index);
+    private SetItem getItem(int index) {
+        return set.getItems().get(index);
     }
 
-    private boolean removeCoin(Coin coin) {
-        return set.removeCoin(coin);
+    private boolean removeItem(SetItem item) {
+        return set.removeItem(item);
     }
 
-    public AddSetScreen(JFrame parent) {
-        this(parent, new CoinSet());
-    }
-
-    void setInfo() {
+    private void setInfo() {
 
         nameInput.setText(set.getName());
-        if(set.getYear() !=0)
+        if(set.getYear() != Set.YEAR_NONE)
             yearInput.setText("" + set.getYear());
         else
             yearInput.setText("");
@@ -216,14 +285,16 @@ public class AddSetScreen {
             valueInput.setText("");
         noteInput.setText(set.getNote());
 
+        locationDropDown.setSelectedItem(api.findContainer(set.getContainerId()).getName());
+
         // Set images
-        if(!set.getObvImgExt().equals("")) {
-            obvImageLocation = imageObvLocationInput.getText();
-            addImage(obvImageLocation, true);
+        if(!set.getObvImgPath().equals("")) {
+            setObvImageLocation(imageObvLocationInput.getText());
+            addImage(getObvImageLocation(), true);
         }
-        if(!set.getRevImgExt().equals("")) {
-            revImageLocation = imageRevLocationInput.getText();
-            addImage(revImageLocation, true);
+        if(!set.getRevImgPath().equals("")) {
+            setRevImageLocation(imageRevLocationInput.getText());
+            addImage(getRevImageLocation(), true);
         }
 
         setCoinList();
@@ -250,13 +321,13 @@ public class AddSetScreen {
         set.setNote(Main.escapeForJava(noteInput.getText()));
     }
 
-    boolean saveSet() {
+    private void saveSet(int button) {
         String errorMessage = "";
 
         if(!nameInput.getText().equals(""))
             set.setName(nameInput.getText());
         else
-            errorMessage += "Name cannot be blank.";
+            errorMessage += Main.getString("error_emptyName");
 
         if(!yearInput.getText().equals(""))
             try {
@@ -265,7 +336,7 @@ public class AddSetScreen {
             catch (NumberFormatException ex) {
                 if(!errorMessage.equals(""))
                     errorMessage += "\n";
-                errorMessage += "Year format is incorrect. Must be an integer (whole number) or blank.";
+                errorMessage += Main.getString("error_emptyYear");
             }
 
         if(!valueInput.getText().equals("")) {
@@ -276,7 +347,7 @@ public class AddSetScreen {
                 if(!errorMessage.equals(""))
                     errorMessage += "\n";
 
-                errorMessage += "Value format incorrect. Must be a number or blank.";
+                errorMessage += Main.getString("error_emptyValue");
             }
         }
         else
@@ -284,193 +355,159 @@ public class AddSetScreen {
 
         set.setNote(Main.escapeForJava(noteInput.getText()));
 
+        if(locationDropDown.getSelectedItem() != null &&
+                !locationDropDown.getSelectedItem().equals("")) {
+            set.setContainerId(api.findContainer(locationDropDown.getSelectedItem().toString()).getId());
+        }
+
         if(errorMessage.equals("")) {
-            String message = set.saveToDb(((Main)parent).databaseConnection);
 
-            // Check for success
-            if(message.equals(DatabaseConnection.SUCCESS_MESSAGE) ||
-                message.equals(DatabaseConnection.NO_CHANGE_MESSAGE) ||
-                message.equals("")) {
-                // Copy the image to a new location, then use that location
-                if(validObvImg) {
-                    String path = imageObvLocationInput.getText();
-                    set.setObvImgExt(path.substring(path.lastIndexOf('.')));
+            errorDisplay.setForeground(Color.BLACK);
+            errorDisplay.setText(Main.getString("addSet_message_saving"));
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                String errorMessage = "";
+                String returnMessage = "";
 
-                    if(Main.copyFile(imageObvLocationInput.getText(),
-                            set.getImagePath(true))) {
+                @Override
+                protected Void doInBackground() {
+                    int rows;
+                    try {
+                        rows = set.saveToDb(api);
+                        returnMessage = api.getSuccessMessage(rows);
+                    }
+                    catch (IOException ioe) {
+                        returnMessage = ioe.getMessage();
+                    }
 
-                        String sql = "UPDATE Sets SET ObvImgExt=\"" + set.getObvImgExt() + "\"\n" +
-                                "WHERE ID=" + set.getId() + ";";
+                    return null;
+                }
 
-                        int rows = ((Main) parent).databaseConnection.runUpdate(sql);
-                        String extMessage = ((Main) parent).databaseConnection.wasSuccessful(rows);
-                        if (!extMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                            errorMessage += extMessage;
+                @Override
+                protected void done() {
+                    // Check for success
+                    if(returnMessage.equals(NumismatistAPI.Companion.getString("db_message_success")) ||
+                            returnMessage.equals(NumismatistAPI.Companion.getString("db_message_noChange")) ||
+                            returnMessage.equals("")) {
+
+                        if(getValidObvImg()) {
+                            try {
+                                if(!set.saveObvImage())
+                                {
+                                    errorMessage += MessageFormat.format(Main.getString("error_savingFile_message"), set.getObvImgPath());
+                                }
+                            } catch (SecurityException | IOException securityException ) {
+                                errorMessage += securityException.getMessage();
+                            }
+                        }
+                        else {
+                            try {
+                                if(!set.deleteObvImage())
+                                {
+                                    if(!errorMessage.equals(""))
+                                        errorMessage += "\n";
+
+                                    errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), set.getObvImgPath());
+                                }
+                            } catch (SecurityException | IOException securityException ) {
+                                if(!errorMessage.equals(""))
+                                    errorMessage += "\n";
+
+                                errorMessage += securityException.getMessage();
+                            }
+                        }
+
+                        if(getValidRevImg()) {
+                            try {
+                                if(!set.saveRevImage())
+                                {
+                                    if(!errorMessage.equals(""))
+                                        errorMessage += "\n";
+
+                                    errorMessage += MessageFormat.format(Main.getString("error_savingFile_message"), set.getRevImgPath());
+                                }
+                            } catch (SecurityException | IOException securityException ) {
+                                if(!errorMessage.equals(""))
+                                    errorMessage += "\n";
+
+                                errorMessage += securityException.getMessage();
+                            }
+                        }
+                        else {
+                            try {
+                                if(!set.deleteRevImage())
+                                {
+                                    if(!errorMessage.equals(""))
+                                        errorMessage += "\n";
+
+                                    errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), set.getRevImgPath());
+                                }
+                            } catch (SecurityException | IOException securityException ) {
+                                if(!errorMessage.equals(""))
+                                    errorMessage += "\n";
+
+                                errorMessage += securityException.getMessage();
+                            }
+                        }
+
+                        if(!errorMessage.equals("")) {
+                            errorDisplay.setForeground(Main.COLOR_ERROR);
+                            errorDisplay.setText(errorMessage);
+                        }
+                        else {
+                            errorDisplay.setForeground(Main.COLOR_SUCCESS);
+                            errorDisplay.setText(MessageFormat.format(Main.getString("addSet_message_saved"), set.toString()));
+
+                            // Add to set if necessary
+                            if(getParentSet() != null && !getEditingParent())
+                                getParentSet().addItem(set);
+
+                            if(button == getBUTTON_OK()) {
+                                set.getRemovedItems().clear();
+                                goHome();
+                            }
+                            else if(button == getBUTTON_SAVE_NEW()) {
+                                setSet(new Set());
+
+                                getParent().setTitle(Main.getString("addSet_title_add"));
+                            }
+                            else if(button == getBUTTON_SAVE_COPY()) {
+
+                                Set newSet = set.copy();
+                                newSet.setSet(null);
+                                newSet.setId(DatabaseItem.ID_INVALID);
+                                newSet.setObvImgPath("");
+                                newSet.setRevImgPath("");
+                                newSet.setContainerId(DatabaseItem.ID_INVALID);
+
+                                if(getParentSet() != null) {
+                                    newSet.setSet(getParentSet());
+                                    getParent().setTitle(Main.getString("addSet_title_addToSet"));
+                                }
+                                else
+                                    getParent().setTitle(Main.getString("addSet_title_add"));
+
+                                setSet(newSet);
+                            }
                         }
                     }
                     else {
-                        errorMessage = "Problem saving obverse image. Please try again.";
+                        errorDisplay.setForeground(Main.COLOR_ERROR);
+                        errorDisplay.setText(returnMessage);
                     }
                 }
-                else {
-                    try {
-                        // Delete the file
-                        new File(set.getImagePath(true)).delete();
-                        set.setObvImgExt("");
+            };
 
-                        // Remove image extension from database
-                        String sql = "UPDATE Sets SET ObvImgExt=null\n" +
-                                "WHERE ID=" + set.getId() + ";";
-
-                        ((Main) parent).databaseConnection.runUpdate(sql);
-                    }
-                    catch (Exception ignore) {}
-                }
-                if(validRevImg) {
-                    String path = imageRevLocationInput.getText();
-                    set.setRevImgExt(path.substring(path.lastIndexOf('.')));
-
-                    if(Main.copyFile(imageRevLocationInput.getText(),
-                            set.getImagePath(false))) {
-
-                        String sql = "UPDATE Sets SET RevImgExt=\"" + set.getRevImgExt() + "\"\n" +
-                                "WHERE ID=" + set.getId() + ";";
-
-                        int rows = ((Main) parent).databaseConnection.runUpdate(sql);
-                        String extMessage = ((Main) parent).databaseConnection.wasSuccessful(rows);
-                        if (!extMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                            if (!errorMessage.equals(""))
-                                errorMessage += extMessage;
-                        }
-                    }
-                    else {
-                        if (!errorMessage.equals(""))
-                            errorMessage += "\n";
-                        errorMessage += "Problem saving reverse image. Please try again.";
-                    }
-                }
-                else {
-                    try {
-                        // Delete the file
-                        new File(set.getImagePath(false)).delete();
-                        set.setRevImgExt("");
-
-                        // Remove image extension from database
-                        String sql = "UPDATE Sets SET RevImgExt=null\n" +
-                                "WHERE ID=" + set.getId() + ";";
-
-                        ((Main) parent).databaseConnection.runUpdate(sql);
-                    }
-                    catch (Exception ignore) {}
-                }
-                if(!errorMessage.equals("")) {
-
-                    errorDisplay.setForeground(Color.RED);
-                    errorDisplay.setText(errorMessage);
-
-                    return false;
-                }
-            }
-            else {
-                errorDisplay.setForeground(Color.RED);
-                errorDisplay.setText(message);
-                return false;
-            }
-            return true;
+            worker.execute();
         }
         else
         {
-            errorDisplay.setForeground(Color.RED);
+            errorDisplay.setForeground(Main.COLOR_ERROR);
             errorDisplay.setText(errorMessage);
         }
-
-        return false;
     }
 
     JPanel getPanel() {
         return panel;
-    }
-
-    private void goHome() {
-        if(fromCollection) {
-            CollectionTableScreen collectionTableScreen = new CollectionTableScreen(parent);
-            collectionTableScreen.setTab(1);
-            ((Main) parent).changeScreen(collectionTableScreen.getPanel(), "Collection");
-        }
-        else
-            ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
-    }
-
-    void addCoin(Coin newCoin) {
-        set.addCoin(newCoin);
-
-        setInfo();
-    }
-
-    void addImage(String pathToImage, boolean obverse) {
-
-        try {
-            ImageIO.read(new File(pathToImage));
-
-            if(obverse) {
-                obvImageLocation = pathToImage;
-                validObvImg = true;
-                // Force it to draw immediately
-                obvPicPanel.update(obvPicPanel.getGraphics());
-            }
-            else {
-                revImageLocation = pathToImage;
-                validRevImg = true;
-                // Force it to draw immediately
-                revPicPanel.update(revPicPanel.getGraphics());
-            }
-
-            // Clear error text
-            errorDisplay.setText("");
-        }
-        catch (IOException e) {
-            errorDisplay.setText("Error opening file");
-        }
-    }
-
-    void removeImage(boolean obverse) {
-        if(obverse) {
-            imageObvLocationInput.setText("");
-            validObvImg = false;
-        }
-        else {
-            imageRevLocationInput.setText("");
-            validRevImg = false;
-        }
-
-        errorDisplay.setText("");
-    }
-
-    void openFileChooser(boolean obverse) {
-        final JFileChooser fc = new JFileChooser();
-
-        ImageFilter imageFilter = new ImageFilter();
-
-        fc.addChoosableFileFilter(imageFilter);
-        fc.setFileFilter(imageFilter);
-        int returnVal = fc.showOpenDialog(parent);
-
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-
-            if(obverse) {
-                obvImageLocation = file.getAbsolutePath();
-                imageObvLocationInput.setText(obvImageLocation);
-            }
-            else {
-                revImageLocation = file.getAbsolutePath();
-                imageRevLocationInput.setText(revImageLocation);
-            }
-
-            addImage(file.getAbsolutePath(), obverse);
-        } else if(returnVal != JFileChooser.CANCEL_OPTION) {
-            errorDisplay.setText("Error retrieving file");
-        }
     }
 
     void setFaceValueDisplay() {
@@ -480,10 +517,10 @@ public class AddSetScreen {
         format.applyPattern("0.00");
         String value = format.format(set.getFaceValue());
 
-        faceValueDisplay.setText("$" + value);
+        faceValueDisplay.setText("" + value);
     }
 
-    public void setSet(CoinSet set) {
+    public void setSet(Set set) {
         this.set = set;
 
         setInfo();
@@ -492,37 +529,93 @@ public class AddSetScreen {
     void setCoinList() {
         listModel.removeAllElements();
 
-        for(int i = 0; i< set.getCoins().size(); i++ )
-            listModel.addElement(set.getCoins().get(i));
+        for(int i = 0; i< set.getItems().size(); i++ )
+            listModel.addElement(set.getItems().get(i));
 
         coinList.setModel(listModel);
         coinList.invalidate();
     }
 
     private void showCoinScreen(Coin coin) {
-        AddCoinScreen addCoinScreen = new AddCoinScreen(parent);
-        addCoinScreen.setSet(this.set);
-        addCoinScreen.setFromCollection(fromCollection);
-        addCoinScreen.setCoin(coin);
+        AddCoinScreen addCoinScreen = new AddCoinScreen(getParent(), coin);
+        addCoinScreen.setParentSet(this.set);
+        addCoinScreen.setFromCollection(getFromCollection());
+        addCoinScreen.setPreviousScreen(this);
 
-        if(set.getCoins().contains(coin))
-            addCoinScreen.setEditingSet(true);
+        if(set.getItems().contains(coin))
+            addCoinScreen.setEditingParent(true);
+
+        String name;
+
+        if(set.getName().equals(""))
+            name = Main.getString("property_set_toString");
+        else
+            name = set.getName();
 
         if(coin.getId() != 0)
-            ((Main)parent).changeScreen(addCoinScreen.getPanel(), "Edit New Coin in Set");
+            ((Main) getParent()).changeScreen(addCoinScreen.getPanel(), MessageFormat.format(Main.getString("addCoin_title_editInSet"), name));
         else
-            ((Main)parent).changeScreen(addCoinScreen.getPanel(), "Add New Coin to Set");
+            ((Main) getParent()).changeScreen(addCoinScreen.getPanel(), MessageFormat.format(Main.getString("addCoin_title_addToSet"), name));
     }
 
-    public CoinSet getSet() {
+    private void showBillScreen(Bill bill) {
+        AddBillScreen addBillScreen = new AddBillScreen(getParent(), bill);
+        addBillScreen.setSet(this.set);
+        addBillScreen.setFromCollection(getFromCollection());
+        addBillScreen.setPreviousScreen(this);
+
+        if(set.getItems().contains(bill))
+            addBillScreen.setEditingParent(true);
+
+        String name;
+
+        if(set.getName().equals(""))
+            name = Main.getString("property_set_toString");
+        else
+            name = set.getName();
+
+        if(bill.getId() != 0)
+            ((Main) getParent()).changeScreen(addBillScreen.getPanel(), MessageFormat.format(Main.getString("addBill_title_editInSet"),name));
+        else
+            ((Main) getParent()).changeScreen(addBillScreen.getPanel(), MessageFormat.format(Main.getString("addBill_title_addToSet"),name));
+    }
+
+    private void showSetScreen(Set newSet) {
+        AddSetScreen addSetScreen = new AddSetScreen(getParent(), newSet);
+        addSetScreen.setParentSet(this.set);
+        addSetScreen.setFromCollection(getFromCollection());
+        addSetScreen.setPreviousScreen(this);
+
+        if(set.getItems().contains(newSet))
+            addSetScreen.setEditingParent(true);
+
+        String newName;
+
+        if(newSet.getName().equals(""))
+            newName = Main.getString("property_set_toString");
+        else
+            newName = newSet.getName();
+
+        if(newSet.getId() != 0) {
+            ((Main) getParent()).changeScreen(addSetScreen.getPanel(), MessageFormat.format(Main.getString("addSet_title_edit"), newName));
+        }
+        else {
+            String name = set.getName();
+            if(name.equals(""))
+                name = Main.getString("property_set_toString");
+            String newTitle = MessageFormat.format(Main.getString("addSet_title_addToSet"), name);
+            ((Main) getParent()).changeScreen(addSetScreen.getPanel(), newTitle);
+        }
+    }
+
+    public Set getSet() {
         return set;
     }
 
-    public void setFromCollection(boolean fromCollection) {
-        this.fromCollection = fromCollection;
-    }
-
     private void createUIComponents() {
+
+        scrollPane = new JScrollPane();
+        scrollPane.setBorder(null);
 
         // Allow resizing of images
         obvPicPanel = new JPanel() {
@@ -532,7 +625,7 @@ public class AddSetScreen {
                 super.paintComponent(g);
 
                 try {
-                    Image img = ImageIO.read(new File(obvImageLocation));
+                    Image img = ImageIO.read(new File(getObvImageLocation()));
 
                     double heightFactor = (float)getHeight() / img.getHeight(this);
                     double widthFactor = (float)getWidth() / img.getWidth(this);
@@ -566,7 +659,7 @@ public class AddSetScreen {
 
                 try {
 
-                    Image img = ImageIO.read(new File(revImageLocation));
+                    Image img = ImageIO.read(new File(getRevImageLocation()));
 
                     double heightFactor = (float)getHeight() / img.getHeight(this);
                     double widthFactor = (float)getWidth() / img.getWidth(this);

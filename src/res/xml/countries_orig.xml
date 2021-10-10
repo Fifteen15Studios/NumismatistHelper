@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<List>
+<Country name="Afghanistan">
+    <Currency name="Afghanistan Afghani"
+              abbr="AFN"
+              symbol="£Afs"
+              symbol_before="false"
+              start_year="1925"/>
+    <Currency name="Afghanistan Rupee"
+              abbr="AFR"
+              symbol="R"
+              symbol_before="false"
+              start_year="1891"
+              end_year="1925"/>
+</Country>
+<Country name="Albania">
+    <Currency name="Albanian Lek"
+              abbr="ALL"
+              symbol="L"
+              symbol_before="false"
+              start_year="1926"/>
+</Country>
+<Country name="Algeria">
+    <Currency name="Algerian Dinar"
+              abbr="DZD"
+              symbol="دج"
+              symbol_before="false"
+              start_year="1926"/>
+</Country>
+<Country name="Canada">
+    <Currency name="Canadian Pound"
+              abbr="CAP"
+              symbol="£"
+              symbol_before="true"
+              start_year="1841"
+              end_year="1858"/>
+    <Currency name="Canadian Dollar"
+              abbr="CAD"
+              symbol="$"
+              symbol_before="true"
+              start_year="1858"/>
+</Country>
+<Country name="Mexico">
+    <Currency name="Mexican Peso"
+              abbr="MXN"
+              symbol="$"
+              symbol_before="true"
+              start_year="1823"/>
+</Country>
+<Country name="United States">
+    <Currency name="United States Dollar"
+              abbr="USD"
+              symbol="$"
+              symbol_before="true"
+              start_year="1792"/>
+</Country>
+</List>

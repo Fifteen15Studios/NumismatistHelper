@@ -37,85 +37,147 @@ then
     echo ""
 fi
 
+
+if [ 1 -eq 0 ]; then
 username="coins"
-password="coinDatabasePassword"
+password="coinDatabasePassword1!"
 databaseName="CoinCollection"
 
 # Create database and start using it
+echo "Creating database..."
+echo ""
 sudo mysql -e "CREATE DATABASE $databaseName;"
 sudo mysql -e "USE $databaseName;"
 
-# Create bills table
-sudo mysql -e "DROP TABLE IF EXISTS `Bills`;"
-sudo mysql -e "CREATE TABLE `Bills` (
-  `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `Country` varchar(32) NOT NULL DEFAULT 'US',
-  `Type` varchar(100) DEFAULT NULL,
-  `Yr` int(11) NOT NULL,
-  `Denomination` decimal(7,2) unsigned NOT NULL,
-  `CurValue` decimal(15,2) unsigned DEFAULT NULL,
-  `Grade` varchar(10) DEFAULT NULL,
-  `Error` tinyint(1) DEFAULT '0',
-  `ErrorType` varchar(100) DEFAULT NULL,
-  `Note` varchar(1024) DEFAULT NULL,
-  `PlateSeriesObv` varchar(10) DEFAULT NULL,
-  `PlateSeriesRev` varchar(10) DEFAULT NULL,
-  `Star` tinyint(1) DEFAULT NULL,
-  `NotePosition` varchar(10) DEFAULT NULL,
-  `District` varchar(5) DEFAULT NULL,
-  `ObvImgExt` varchar(10) DEFAULT NULL,
-  `RevImgExt` varchar(10) DEFAULT NULL,
-  `Graded` tinyint(1) DEFAULT NULL,
-  `Signatures` varchar(255) DEFAULT NULL,
-  `SeriesLetter` varchar(3) DEFAULT NULL,
-  PRIMARY KEY (`ID`)
+# Create countries table
+sudo mysql -e "DROP TABLE IF EXISTS `Countries`;"
+sudo mysql -e "CREATE TABLE Countries (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  Name varchar(100) UNIQUE
+  );"
+  
+# Create currencies table
+sudo mysql -e "DROP TABLE IF EXISTS `Currencies`;"
+sudo mysql -e "CREATE TABLE Currencies (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  Name varchar(100)  NOT NULL,
+  Abbreviation varchar(10) UNIQUE,
+  Symbol varchar(10),
+  SymbolBefore boolean default true,
+  YrStart int UNSIGNED NOT NULL default 9999,
+  YrEnd int UNSIGNED default NULL
+  );"
+  
+# Create countryCurrencies table
+sudo mysql -e "DROP TABLE IF EXISTS `CountryCurrencies`;"
+sudo mysql -e "CREATE TABLE CountryCurrencies (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  CountryName varchar(100) NOT NULL,
+  CurrencyAbbr varchar(10) NOT NULL,
+  FOREIGN KEY(CountryName) REFERENCES Countries(Name),
+  FOREIGN KEY(CurrencyAbbr) REFERENCES Currencies(Abbreviation)
+  );"
+
+# Create containers table
+sudo mysql -e "DROP TABLE IF EXISTS `Containers`;"
+sudo mysql -e "CREATE TABLE Containers (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  Name varchar(100) UNIQUE NOT NULL,
+  ParentID bigint UNSIGNED,
+  FOREIGN KEY(ParentID) REFERENCES Containers(ID)
 );"
 
 # Create Sets table
 sudo mysql -e "DROP TABLE IF EXISTS `Sets`;"
-sudo mysql -e "CREATE TABLE `Sets` (
-  `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `Name` varchar(100) DEFAULT NULL,
-  `Yr` int(11) DEFAULT NULL,
-  `CurValue` decimal(15,2) unsigned DEFAULT NULL,
-  `Note` varchar(1024) DEFAULT NULL,
-  `ObvImgExt` varchar(10) DEFAULT NULL,
-  `RevImgExt` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`ID`)
+sudo mysql -e "CREATE TABLE Sets (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  Name varchar(100),
+  Yr int,
+  CurValue Decimal(20,2) UNSIGNED,
+  ObvImgExt varchar(10),
+  RevImgExt varchar(10),
+  Note varchar(1024),
+  ContainerID bigint UNSIGNED,
+  ParentID bigint UNSIGNED,
+  FOREIGN KEY(ParentID) REFERENCES Sets(ID),
+  FOREIGN KEY(ContainerID) REFERENCES Containers(ID)
 );"
 
 # Create Coins table
 sudo mysql -e "DROP TABLE IF EXISTS `Coins`;"
-sudo mysql -e "CREATE TABLE `Coins` (
-  `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `Country` varchar(32) NOT NULL DEFAULT 'US',
-  `Type` varchar(100) DEFAULT NULL,
-  `Yr` int(11) NOT NULL,
-  `Denomination` decimal(7,2) unsigned NOT NULL,
-  `CurValue` decimal(15,2) unsigned DEFAULT NULL,
-  `MintMark` enum('C','CC','D','O','P','S','W') DEFAULT NULL,
-  `Grade` varchar(10) DEFAULT NULL,
-  `Error` tinyint(1) DEFAULT '0',
-  `ErrorType` varchar(100) DEFAULT NULL,
-  `SetID` bigint(20) unsigned DEFAULT NULL,
-  `Note` varchar(1024) DEFAULT NULL,
-  `Graded` tinyint(1) DEFAULT '0',
-  `ObvImgExt` varchar(10) DEFAULT NULL,
-  `RevImgExt` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`ID`),
-  KEY `SetID` (`SetID`),
-  CONSTRAINT `Coins_ibfk_1` FOREIGN KEY (`SetID`) REFERENCES `Sets` (`ID`)
+sudo mysql -e "CREATE TABLE Coins (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  CountryName varchar(100) NOT NULL,
+  CurrencyAbbr varchar(10) NOT NULL,
+  Type varchar(100),
+  Yr int NOT NULL,
+  Denomination Decimal(20,3) UNSIGNED NOT NULL,
+  CurValue Decimal(20,2) UNSIGNED,
+  MintMark varchar(3),
+  Graded Boolean default false,
+  Grade varchar(10),
+  Error boolean default false,
+  ErrorType varchar(100),
+  SetID bigint UNSIGNED default NULL
+    check (SetID is null or SlotID is null),
+  SlotID bigint UNSIGNED default NULL
+    check (SetID is null or SlotID is null),
+  ObvImgExt varchar(10),
+  RevImgExt varchar(10),
+  Note varchar(1024),
+  ContainerID bigint UNSIGNED,
+  FOREIGN KEY(ContainerID) REFERENCES Containers(ID),
+  FOREIGN KEY(SetID) REFERENCES Sets(ID),
+  FOREIGN KEY(SlotID) REFERENCES RowSlots(ID),
+  FOREIGN KEY(CountryName) REFERENCES Countries(Name),
+  FOREIGN KEY(CurrencyAbbr) REFERENCES Currencies(Abbreviation)
+);"
+
+# Create bills table
+sudo mysql -e "DROP TABLE IF EXISTS `Bills`;"
+sudo mysql -e "CREATE TABLE Bills (
+  ID bigint UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  CountryName varchar(100) NOT NULL,
+  CurrencyAbbr varchar(10)  NOT NULL,
+  Type varchar(100),
+  Yr int NOT NULL,
+  SeriesLetter varchar(3),
+  Serial varchar(20),
+  Denomination Decimal(20,3) UNSIGNED NOT NULL,
+  CurValue Decimal(20,2) UNSIGNED,
+  Graded boolean,
+  Grade varchar(10),
+  Error boolean default false,
+  ErrorType varchar(100),
+  Replacement boolean default false,
+  Signatures varchar(255),
+  ObvImgExt varchar(10),
+  RevImgExt varchar(10),
+  Note varchar(1024),
+  ContainerID bigint UNSIGNED,
+  SetID bigint UNSIGNED,
+  FOREIGN KEY(SetID) REFERENCES Sets(ID),
+  FOREIGN KEY(ContainerID) REFERENCES Containers(ID),
+  FOREIGN KEY(CountryName) REFERENCES Countries(Name),
+  FOREIGN KEY(CurrencyAbbr) REFERENCES Currencies(Abbreviation)
 );"
 
 # Create user and give permissons to database
-sudo mysql -e "CREATE USER $username@localhost IDENTIFIED BY \"$password\";"
-sudo mysql -e "GRANT ALL ON $databaseName.* TO $username@localhost IDENTIFIED BY \"$password\";"
+# Use % to allow remote access
+echo "Creating SQL user and granting permissions..."
+echo ""
+sudo mysql -e "CREATE USER \"$username\"@\"%\" IDENTIFIED BY \"$password\";"
+sudo mysql -e "GRANT ALL ON $databaseName.* TO \"$username\"@\"%\" IDENTIFIED BY \"$password\";"
 # Apply new permissions
 sudo mysql -e "FLUSH PRIVILEGES;"
+fi
 
-echo "Installing JDK 15..."
+echo "Installing JDK 16..."
+echo ""
 
-# Install Jdk 15
+# Install Jdk 16
 sudo add-apt-repository ppa:linuxuprising/java
 sudo apt update
-sudo apt install oracle-java15-installer -y
+sudo apt install oracle-java16-set-default -y
+
+echo "Done!"

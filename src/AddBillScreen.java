@@ -1,24 +1,24 @@
-import items.Bill;
-import items.DatabaseConnection;
+import items.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 
-public class AddBillScreen {
+public class AddBillScreen extends AddSetItemScreen {
 
     private JTextField typeInput;
     private JButton cancelButton;
     private JButton OKButton;
-    private JTextField countryInput;
     private JTextField yearInput;
     private JTextField denominationInput;
-    private JComboBox gradeComboBox;
+    private AutoComboBox gradeComboBox;
     private JCheckBox gradedCheckBox;
     private JCheckBox errorCheckBox;
     private JTextField errorTypeInput;
@@ -33,76 +33,85 @@ public class AddBillScreen {
     private JButton revSetButton;
     private JButton revBrowseButton;
     private JButton revRemoveButton;
-    private JTextField plateSeriesObvInput;
-    private JTextField plateSeriesRevInput;
-    private JTextField districtInput;
-    private JTextField notePositionInput;
     private JTextArea errorDisplay;
-    private JLabel fieldTips;
     private JCheckBox starCheck;
     private JTextField valueInput;
-    private JButton addAnotherButton;
+    private JButton saveNewButton;
     private JTextField signaturesInput;
     private JPanel obvPicPanel;
     private JPanel revPicPanel;
     private JTextField seriesLetter;
-
-    private final JFrame parent;
+    private AutoComboBox countryInput;
+    private AutoComboBox currencyInput;
+    private JButton saveCopyButton;
+    private JComboBox locationDropDown;
+    private JButton addContainerButton;
+    private JScrollPane scrollPane;
 
     private Bill bill;
 
-    private String obvImageLocation = "";
-    private String revImageLocation = "";
-
-    private boolean validObvImg = false;
-    private boolean validRevImg = false;
-
-    private boolean fromCollection = false;
+    boolean editingSet = false;
 
     public AddBillScreen(JFrame parent) {
-        this.parent = parent;
+        this(parent, new Bill());
+    }
 
-        setBill(new Bill());
+    public AddBillScreen(JFrame parent, final Bill bill) {
+        super(parent);
 
-        fieldTips.setText("<HTML><U><B>What are these?</B></U></HTML>");
-        fieldTips.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        fieldTips.addMouseListener(new MouseAdapter()
-        {
-            public void mouseClicked(MouseEvent e)
-            {
-                // Show bill info
-                BillInfoDialog infoDialog = new BillInfoDialog(parent);
-                infoDialog.setVisible(true);
+        setReturnTab(TAB_BILLS);
+
+        setImageObvLocationInput(imageObvLocationInput);
+        setImageRevLocationInput(imageRevLocationInput);
+
+        setObvPicPanel(obvPicPanel);
+        setRevPicPanel(revPicPanel);
+
+        api = ((Main) parent).api;
+
+        api.setCountryListener(new NumismatistAPI.CountryListener() {
+            @Override
+            public void countryListChanged(@NotNull ArrayList<Country> countries) {
+                //Update Country and Currency lists without changing selection
+                Object curCountry = countryInput.getSelectedItem();
+                Object curCurrency = currencyInput.getSelectedItem();
+                ComboBoxHelper.setupBoxes(countryInput, yearInput, currencyInput, errorDisplay, api);
+                if(curCountry != null && !curCountry.equals(""))
+                    countryInput.setSelectedItem(curCountry);
+                if(curCurrency != null && !curCurrency.equals(""))
+                    currencyInput.setSelectedItem(curCurrency);
             }
         });
+
+        this.bill = bill;
 
         errorCheckBox.addActionListener(e -> errorTypeInput.setEnabled(errorCheckBox.isSelected()));
         cancelButton.addActionListener(e -> goHome());
 
-        addAnotherButton.addActionListener( e -> {
-            if(saveBill()) {
-                errorDisplay.setForeground(Color.GREEN);
-                errorDisplay.setText("Bill saved!");
+        ComboBoxHelper.setContainerList(locationDropDown, api, addContainerButton, parent);
+        ComboBoxHelper.setupBoxes( countryInput, yearInput, currencyInput, errorDisplay, api);
 
-                setBill(new Bill());
+        // Restrict input
+        ((PlainDocument) denominationInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getDenominationFilter());
+        ((PlainDocument) yearInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getCurrentYearFilter());
+        ((PlainDocument) valueInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getValueFilter());
 
-                parent.setTitle("Add Bill");
-            }
-        });
+        MyLetterFilter letterFilter = new MyLetterFilter();
+        letterFilter.setMaxLetters(1);
+        ((PlainDocument) seriesLetter.getDocument()).setDocumentFilter(letterFilter);
 
-        OKButton.addActionListener( e-> {
-            if(saveBill())
-                goHome();
-        });
+        saveNewButton.addActionListener(e -> saveBill(getBUTTON_SAVE_NEW()));
+        saveCopyButton.addActionListener(e -> saveBill(getBUTTON_SAVE_COPY()));
+        OKButton.addActionListener( e-> saveBill(getBUTTON_OK()));
 
         obvSetButton.addActionListener(e -> {
-            obvImageLocation = imageObvLocationInput.getText();
-            addImage(obvImageLocation, true);
+            setObvImageLocation(imageObvLocationInput.getText());
+            addImage(getObvImageLocation(), true);
         });
 
         revSetButton.addActionListener(e -> {
-            revImageLocation = imageRevLocationInput.getText();
-            addImage(revImageLocation, false);
+            setRevImageLocation(imageRevLocationInput.getText());
+            addImage(getRevImageLocation(), false);
         });
 
         obvBrowseButton.addActionListener( e -> openFileChooser(true));
@@ -114,15 +123,41 @@ public class AddBillScreen {
         for(int i = 0; i < Bill.Companion.getCONDITIONS().length; i++) {
             gradeComboBox.addItem(Bill.Companion.getCONDITIONS()[i]);
         }
+        parent.getRootPane().setDefaultButton(OKButton);
+        // Set initial focus
+        SwingUtilities.invokeLater(() -> countryInput.requestFocus());
+
+        setInfo();
     }
 
     private void setInfo() {
         typeInput.setText(bill.getName());
-        countryInput.setText(bill.getCountry());
+        String countryName = Country.Companion.getCountry(api.getCountries(), bill.getCountryName()).getName();
+
+        if(!countryName.isBlank())
+            ((JTextField)countryInput.getEditor().getEditorComponent()).setText(countryName);
+
         if(bill.getYear() != 0)
             yearInput.setText("" + bill.getYear());
         else
             yearInput.setText("");
+
+        // Must happen after country and year are set
+        try {
+            ComboBoxHelper.setCurrency( countryInput, yearInput, currencyInput, api.getCountries());
+        }
+        catch (NumberFormatException nfe) {
+            errorDisplay.setText(Main.getString("error_invalidDate"));
+        }
+
+        if(!bill.getCurrency().getNameAbbr().equals("")) {
+
+            ((JTextField) currencyInput.getEditor().getEditorComponent()).setText(
+                    api.findCurrency(bill.getCurrency().getNameAbbr()).getName());
+        }
+
+        locationDropDown.setSelectedItem(api.findContainer(bill.getContainerId()).getName());
+
         serialNumberInput.setText(bill.getSerial());
         if(bill.getDenomination() != 0.0) {
             // Format the number properly
@@ -146,37 +181,49 @@ public class AddBillScreen {
         else
             valueInput.setText("");
 
-        plateSeriesObvInput.setText(bill.getPlateSeriesObv());
-        plateSeriesRevInput.setText(bill.getPlateSeriesRev());
-        districtInput.setText(bill.getDistrict());
-        notePositionInput.setText(bill.getNotePosition());
         gradedCheckBox.setSelected(bill.getGraded());
         gradeComboBox.setSelectedItem(bill.getCondition());
         errorCheckBox.setSelected(bill.getError());
         errorTypeInput.setText(bill.getErrorType());
         seriesLetter.setText(bill.getSeriesLetter());
-        starCheck.setSelected(bill.getStar());
+        starCheck.setSelected(bill.getReplacement());
         noteInput.setText(bill.getNote());
 
         // Set images
-        if(!bill.getObvImgExt().equals("")) {
-            obvImageLocation = imageObvLocationInput.getText();
-            addImage(obvImageLocation, true);
+        if(!bill.getObvImgPath().equals("")) {
+            setObvImageLocation(imageObvLocationInput.getText());
+            addImage(getObvImageLocation(), true);
         }
-        if(!bill.getRevImgExt().equals("")) {
-            revImageLocation = imageRevLocationInput.getText();
-            addImage(revImageLocation, true);
+        if(!bill.getRevImgPath().equals("")) {
+            setRevImageLocation(imageRevLocationInput.getText());
+            addImage(getRevImageLocation(), true);
         }
     }
 
-    boolean saveBill() {
+    private void saveBill(int button) {
         String errorMessage = "";
 
         bill.setName(typeInput.getText());
-        if(countryInput.getText().trim().equals(""))
-            errorMessage += "Country must not be blank. If it's unknown or indistinguishable, enter \"Unknown\".";
 
-        bill.setCountry(countryInput.getText());
+        // Set country name
+        if(countryInput.getSelectedIndex() != -1) {
+            bill.setCountryName((countryInput).ids[countryInput.getSelectedIndex()]);
+        }
+        else {
+            if(!errorMessage.equals(""))
+                errorMessage += "\n";
+            errorMessage += Main.getString("error_emptyCountry");
+        }
+
+        // Set currency abbreviation
+        if(currencyInput.getSelectedIndex() != -1) {
+            bill.getCurrency().setNameAbbr((currencyInput).ids[currencyInput.getSelectedIndex()]);
+        }
+        else {
+            if(!errorMessage.equals(""))
+                errorMessage += "\n";
+            errorMessage += Main.getString("error_emptyCurrency");
+        }
 
         try {
             bill.setYear(Integer.parseInt(yearInput.getText()));
@@ -184,7 +231,7 @@ public class AddBillScreen {
         catch (NumberFormatException er) {
             if(!errorMessage.equals(""))
                 errorMessage += "\n";
-            errorMessage += "Year format is incorrect. Cannot be blank and must be an integer (whole number).";
+            errorMessage += Main.getString("error_emptyYear");
         }
         String letter = seriesLetter.getText();
 
@@ -193,11 +240,16 @@ public class AddBillScreen {
         else {
             if(!errorMessage.equals(""))
                 errorMessage += "\n";
-            errorMessage += "Series letter has max length of 3.";
+            errorMessage += Main.getString("error_seriesLetterLength");
         }
 
         bill.setSerial(serialNumberInput.getText());
         bill.setSignatures(signaturesInput.getText());
+
+        if(locationDropDown.getSelectedItem() != null &&
+                !locationDropDown.getSelectedItem().equals("")) {
+            bill.setContainerId(api.findContainer(locationDropDown.getSelectedItem().toString()).getId());
+        }
 
         try {
             bill.setDenomination(Double.parseDouble(denominationInput.getText()));
@@ -205,20 +257,23 @@ public class AddBillScreen {
         catch (NumberFormatException ex) {
             if(!errorMessage.equals(""))
                 errorMessage += "\n";
-            errorMessage += "Denomination format incorrect. Cannot be blank and must be a number.";
+            errorMessage += Main.getString("error_emptyDenomination");
         }
         if(!valueInput.getText().equals("")) {
             try {
                 bill.setValue(Double.parseDouble(valueInput.getText()));
             } catch (NumberFormatException e) {
-                errorMessage += "Value format incorrect. Must be a number or left blank.";
+                if(!errorMessage.equals(""))
+                    errorMessage += "\n";
+                errorMessage += Main.getString("error_emptyValue");
             }
         }
 
-        bill.setPlateSeriesObv(plateSeriesObvInput.getText());
-        bill.setPlateSeriesRev(plateSeriesRevInput.getText());
-        bill.setDistrict(districtInput.getText());
-        bill.setNotePosition(notePositionInput.getText());
+        if(!imageObvLocationInput.getText().equals("" )&& !(new File(imageObvLocationInput.getText())).exists())
+            errorMessage += MessageFormat.format(Main.getString("error_fileNotFound"), imageObvLocationInput.getText()) + "\n";
+        if(!imageRevLocationInput.getText().equals("") && !(new File(imageRevLocationInput.getText())).exists())
+            errorMessage += MessageFormat.format(Main.getString("error_fileNotFound"), imageRevLocationInput.getText()) + "\n";
+
         bill.setGraded(gradedCheckBox.isSelected());
 
         if(gradeComboBox.getSelectedItem() != null)
@@ -229,103 +284,107 @@ public class AddBillScreen {
         if(errorCheckBox.isSelected())
             bill.setErrorType(errorTypeInput.getText());
 
-        bill.setStar(starCheck.isSelected());
+        bill.setReplacement(starCheck.isSelected());
 
         bill.setNote(Main.escapeForJava(noteInput.getText()));
 
         if(errorMessage.equals("")) {
-            int rows =  bill.saveToDb(((Main) parent).databaseConnection);
-            String message = ((Main) parent).databaseConnection.wasSuccessful(rows);
 
-            if(message.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                // Copy the image to a new location, then use that location
-                if(validObvImg) {
-                    String path = imageObvLocationInput.getText();
-                    bill.setObvImgExt(path.substring(path.lastIndexOf('.')));
+            errorDisplay.setForeground(Color.BLACK);
+            errorDisplay.setText(Main.getString("addBill_message_saving"));
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
 
-                    if(Main.copyFile(imageObvLocationInput.getText(),
-                            bill.getImagePath(true))) {
+                int rows = 0;
+                String returnMessage = "";
+                String errorMessage = "";
 
-                        String sql = "UPDATE Bills SET ObvImgExt=\"" + bill.getObvImgExt() + "\"\n" +
-                                "WHERE ID=" + bill.getId() + ";";
+                @Override
+                protected Void doInBackground() {
+                    rows = bill.saveToDb(api);
+                    returnMessage = api.getSuccessMessage(rows);
 
-                        rows = ((Main) parent).databaseConnection.runUpdate(sql);
-                        String extMessage = ((Main) parent).databaseConnection.wasSuccessful(rows);
-                        if (!extMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                            errorMessage += extMessage;
+                    if(returnMessage.equals(NumismatistAPI.Companion.getString("db_message_success"))) {
+                        try {
+                            if(!bill.saveObvImage())
+                            {
+                                errorMessage += MessageFormat.format(Main.getString("error_savingFile_message"), bill.getObvImgPath());
+                            }
+                        } catch (SecurityException | IOException securityException ) {
+                            errorMessage += securityException.getMessage();
+                        }
+                        try {
+                            if(!bill.saveRevImage())
+                            {
+                                errorMessage += MessageFormat.format(Main.getString("error_savingFile_message"), bill.getRevImgPath());
+                            }
+                        } catch (SecurityException | IOException securityException ) {
+                            errorMessage += securityException.getMessage();
+                        }
+                    }
+
+                    return  null;
+                }
+
+                @Override
+                protected void done() {
+                    if(returnMessage.equals(NumismatistAPI.Companion.getString("db_message_success"))) {
+                        if(!errorMessage.equals("")) {
+                            errorDisplay.setForeground(Main.COLOR_ERROR);
+                            errorDisplay.setText(errorMessage);
+                        }
+                        else {
+                            errorDisplay.setForeground(Main.COLOR_SUCCESS);
+                            errorDisplay.setText(
+                                    MessageFormat.format(Main.getString("addBill_message_saved"),
+                                            bill.toString()));
+
+                            // Add to set if necessary
+                            if(getParentSet() != null && !editingSet)
+                                getParentSet().addItem(bill);
+
+                            if(button == getBUTTON_OK()) {
+                                goHome();
+                            }
+                            else if (button == getBUTTON_SAVE_NEW()) {
+
+                                setBill(new Bill());
+
+                                if(getParentSet() != null)
+                                    getParent().setTitle(Main.getString("addBill_title_addToSet"));
+                                else
+                                    getParent().setTitle(Main.getString("addBill_title_add"));
+                            }
+                            else if (button == getBUTTON_SAVE_COPY()) {
+                                Bill newBill = bill.copy();
+                                newBill.setSet(null);
+                                newBill.setId(DatabaseItem.ID_INVALID);
+                                newBill.setObvImgPath("");
+                                newBill.setRevImgPath("");
+                                newBill.setContainerId(DatabaseItem.ID_INVALID);
+
+                                if(getParentSet() != null) {
+                                    newBill.setSet(getParentSet());
+                                    getParent().setTitle(Main.getString("addBill_title_addToSet"));
+                                }
+                                else
+                                    getParent().setTitle(Main.getString("addBill_title_add"));
+
+                                setBill(newBill);
+                            }
                         }
                     }
                     else {
-                        errorMessage = "Problem saving obverse image. Please try again.";
+                        errorDisplay.setForeground(Main.COLOR_ERROR);
+                        errorDisplay.setText(returnMessage);
                     }
                 }
-                else {
-                    // Delete the file
-                    new File(bill.getImagePath(true)).delete();
-                    bill.setObvImgExt("");
+            };
 
-                    // Remove image extension from database
-                    String sql = "UPDATE Bills SET ObvImgExt=null\n" +
-                            "WHERE ID=" + bill.getId() + ";";
-
-                    ((Main)parent).databaseConnection.runUpdate(sql);
-                }
-                if(validRevImg) {
-                    String path = imageRevLocationInput.getText();
-                    bill.setRevImgExt(path.substring(path.lastIndexOf('.')));
-
-                    if(Main.copyFile(imageRevLocationInput.getText(),
-                            bill.getImagePath(false))) {
-
-                        String sql = "UPDATE Bills SET RevImgExt=\"" + bill.getRevImgExt() + "\"\n" +
-                                "WHERE ID=" + bill.getId() + ";";
-
-                        rows = ((Main) parent).databaseConnection.runUpdate(sql);
-                        String extMessage = ((Main) parent).databaseConnection.wasSuccessful(rows);
-                        if (!extMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                            if (!errorMessage.equals(""))
-                                errorMessage += "\n";
-                            errorMessage += extMessage;
-                        }
-                    }
-                    else {
-                        if (!errorMessage.equals(""))
-                            errorMessage += "\n";
-                        errorMessage += "Problem saving reverse image. Please try again.";
-                    }
-                }
-                else {
-                    // Delete the file
-                    new File(bill.getImagePath(false)).delete();
-                    bill.setRevImgExt("");
-
-                    // Remove image extension from database
-                    String sql = "UPDATE Bills SET RevImgExt=null\n" +
-                            "WHERE ID=" + bill.getId() + ";";
-
-                    ((Main)parent).databaseConnection.runUpdate(sql);
-                }
-
-                if(!errorMessage.equals("")) {
-
-                    errorDisplay.setForeground(Color.RED);
-                    errorDisplay.setText(errorMessage);
-
-                    return false;
-                }
-            }
-            else {
-                errorDisplay.setForeground(Color.RED);
-                errorDisplay.setText(message);
-                return false;
-            }
-
-            return true;
+            worker.execute();
         }
         else {
-            errorDisplay.setForeground(Color.RED);
+            errorDisplay.setForeground(Main.COLOR_ERROR);
             errorDisplay.setText(errorMessage);
-            return false;
         }
     }
 
@@ -339,88 +398,10 @@ public class AddBillScreen {
         return addBillPanel;
     }
 
-    private void goHome() {
-
-        if(fromCollection) {
-            CollectionTableScreen collectionTableScreen = new CollectionTableScreen(parent);
-            collectionTableScreen.setTab(2);
-            ((Main) parent).changeScreen(collectionTableScreen.getPanel(), "Collection");
-        }
-        else
-            ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
-    }
-
-    void addImage(String pathToImage, boolean obverse) {
-
-        try {
-            ImageIO.read(new File(pathToImage));
-
-            if(obverse) {
-                obvImageLocation = pathToImage;
-                validObvImg = true;
-                // Force it to draw immediately
-                obvPicPanel.update(obvPicPanel.getGraphics());
-            }
-            else {
-                revImageLocation = pathToImage;
-                validRevImg = true;
-                // Force it to draw immediately
-                revPicPanel.update(revPicPanel.getGraphics());
-            }
-
-            // Clear error text
-            errorDisplay.setText("");
-        }
-        catch (IOException e) {
-            errorDisplay.setText("Error opening file");
-        }
-    }
-
-    void removeImage(boolean obverse) {
-        if(obverse) {
-            imageObvLocationInput.setText("");
-            validObvImg = false;
-        }
-        else {
-            imageRevLocationInput.setText("");
-            validRevImg = false;
-        }
-
-        errorDisplay.setText("");
-    }
-
-    void openFileChooser(boolean obverse) {
-        final JFileChooser fc = new JFileChooser();
-
-        ImageFilter imageFilter = new ImageFilter();
-
-        fc.addChoosableFileFilter(imageFilter);
-        fc.setFileFilter(imageFilter);
-        int returnVal = fc.showOpenDialog(parent);
-
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-
-            if(obverse) {
-                obvImageLocation = file.getAbsolutePath();
-                imageObvLocationInput.setText(obvImageLocation);
-            }
-            else {
-                revImageLocation = file.getAbsolutePath();
-                imageRevLocationInput.setText(revImageLocation);
-            }
-
-            addImage(file.getAbsolutePath(), obverse);
-        } else if(returnVal != JFileChooser.CANCEL_OPTION) {
-            errorDisplay.setText("Error retrieving file");
-        }
-    }
-
-    public void setFromCollection(boolean fromCollection) {
-        this.fromCollection = fromCollection;
-    }
-
     private void createUIComponents() {
+
+        scrollPane = new JScrollPane();
+        scrollPane.setBorder(null);
 
         // Allow resizing of images
         obvPicPanel = new JPanel() {
@@ -430,7 +411,7 @@ public class AddBillScreen {
                 super.paintComponent(g);
 
                 try {
-                    Image img = ImageIO.read(new File(obvImageLocation));
+                    Image img = ImageIO.read(new File(getObvImageLocation()));
 
                     double heightFactor = (float)getHeight() / img.getHeight(this);
                     double widthFactor = (float)getWidth() / img.getWidth(this);
@@ -464,7 +445,7 @@ public class AddBillScreen {
 
                 try {
 
-                    Image img = ImageIO.read(new File(revImageLocation));
+                    Image img = ImageIO.read(new File(getRevImageLocation()));
 
                     double heightFactor = (float)getHeight() / img.getHeight(this);
                     double widthFactor = (float)getWidth() / img.getWidth(this);
@@ -489,5 +470,9 @@ public class AddBillScreen {
                 }
             }
         };
+    }
+
+    public void setSet(Set set) {
+        this.setParentSet(set);
     }
 }

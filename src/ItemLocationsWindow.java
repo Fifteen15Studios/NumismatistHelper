@@ -1,11 +1,10 @@
-import items.DatabaseConnection;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
 public class ItemLocationsWindow extends JDialog {
@@ -23,6 +22,11 @@ public class ItemLocationsWindow extends JDialog {
     private JButton setDefaultUsernameButton;
     private JButton setDefaultPasswordButton;
     private JButton setDefaultLocationButton;
+    private JButton setDefaultPortButton;
+    private JSpinner portNumberInput;
+    private JSpinner timeoutInput;
+    private JButton setDefaultTimeoutButton;
+    private JButton timeoutHelpButton;
 
     private final JFrame parent;
 
@@ -32,18 +36,36 @@ public class ItemLocationsWindow extends JDialog {
         super(parent);
         setContentPane(contentPane);
         setModal(true);
-        setMinimumSize(new Dimension(150,150));
+        setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
         setResizable(false);
         getRootPane().setDefaultButton(OKButton);
+        setIconImage(Main.getIcon().getImage());
 
         this.parent = parent;
+        timeoutHelpButton.setBorder(null);
 
-        setTitle("Item Locations");
+
+        setTitle(Main.getString("itemLoc_title"));
 
         databaseServerInput.setText(Main.getSettingDatabaseServer());
         databaseNameInput.setText(Main.getSettingDatabaseName());
         databaseUsernameInput.setText(Main.getSettingDatabaseUsername());
         imagesInput.setText(Main.getSettingImagePath());
+        SpinnerModel portModel =
+                new SpinnerNumberModel(Main.getSettingPortNumber(), //initial value
+                        0, //min
+                        65535, //max
+                        1); //step
+        portNumberInput.setModel(portModel);
+        // Remove comma (,) from numbers (ex: 3306 instead of 3,306)
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(portNumberInput, "#");
+        portNumberInput.setEditor(editor);
+        SpinnerModel timeoutModel =
+                new SpinnerNumberModel(Main.getSettingDbTimeout(), //initial value
+                        0, //min
+                        Integer.MAX_VALUE, //max
+                        1); //step
+        timeoutInput.setModel(timeoutModel);
 
         passwordInput.setText("12345678");
         passwordInput.getDocument().addDocumentListener(new DocumentListener() {
@@ -79,6 +101,17 @@ public class ItemLocationsWindow extends JDialog {
         setDefaultUsernameButton.addActionListener( e -> databaseUsernameInput.setText(Main.DEFAULT_DATABASE_USERNAME));
         setDefaultPasswordButton.addActionListener( e -> passwordInput.setText(Main.DEFAULT_DATABASE_PASSWORD));
         setDefaultLocationButton.addActionListener( e -> imagesInput.setText(Main.getDefaultImagesLocation()));
+        setDefaultPortButton.addActionListener( e -> portNumberInput.setValue(Main.DEFAULT_PORT_NUMBER));
+        setDefaultTimeoutButton.addActionListener( e -> timeoutInput.setValue(Main.DEFAULT_TIMEOUT_SECONDS));
+
+        // Change initial focus from Default server button to server address entry
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                super.windowOpened(e);
+                databaseServerInput.requestFocusInWindow();
+            }
+        });
     }
 
     private void onOK() {
@@ -94,27 +127,6 @@ public class ItemLocationsWindow extends JDialog {
         else
             password = Main.getSettingDatabasePassword();
 
-        DatabaseConnection testConnection = null;
-
-        // Test connection
-        try {
-
-            testConnection = new DatabaseConnection(
-                    databaseUsernameInput.getText(),
-                    password,
-                    databaseNameInput.getText(),
-                    databaseServerInput.getText()
-            );
-        }
-        // If connection failed
-        catch (Exception e) {
-            int result = JOptionPane.showConfirmDialog(parent, "Database connection failed. Continue anyway?",
-                    "Connection Failed", JOptionPane.YES_NO_OPTION);
-
-            if(result != JOptionPane.YES_OPTION)
-                error = true;
-        }
-
         File directory = new File(imagesInput.getText());
 
         // Check to make sure file directory exists
@@ -123,8 +135,10 @@ public class ItemLocationsWindow extends JDialog {
         }
         else {
             // If directory doesn't exist, ask if we should create it
-            int result = JOptionPane.showConfirmDialog(parent, "Images directory doesn't exist. Create it now?",
-                    "Create Directory", JOptionPane.YES_NO_OPTION);
+            int result = JOptionPane.showConfirmDialog(parent,
+                    Main.getString("itemLoc_error_message_imagesDirectoryMissing"),
+                    Main.getString("itemLoc_error_title_imagesDirectoryMissing"),
+                    JOptionPane.YES_NO_OPTION);
 
             // If we should create it
             if(result == JOptionPane.YES_OPTION) {
@@ -133,8 +147,10 @@ public class ItemLocationsWindow extends JDialog {
 
                 if(!created)
                 {
-                    JOptionPane.showMessageDialog(parent, "Failed to create directory!",
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(parent,
+                            Main.getString("itemLoc_error_message_directoryCreateFail"),
+                            Main.getString("itemLoc_error_title_directoryCreateFail"),
+                            JOptionPane.ERROR_MESSAGE);
 
                     error = true;
                 }
@@ -146,15 +162,66 @@ public class ItemLocationsWindow extends JDialog {
         // If everything is OK, save everything and close the window
         if(!error) {
 
-            prefs.put(Main.SETTING_DATABASE_NAME, databaseNameInput.getText());
-            prefs.put(Main.SETTING_DATABASE_SERVER, databaseServerInput.getText());
-            prefs.put(Main.SETTING_DATABASE_USERNAME, databaseUsernameInput.getText());
-            prefs.put(Main.SETTING_IMAGE_PATH, imagesInput.getText());
-            prefs.put(Main.SETTING_DATABASE_PASSWORD, password);
+            ItemLocationsWindow window = this;
 
-            ((Main)parent).databaseConnection = testConnection;
+            ((Main) parent).api.setConnectionTimeout(Integer.parseInt(timeoutInput.getValue().toString()));
+            ((Main) parent).api.setImagePath(imagesInput.getText());
 
-            dispose();
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+
+                boolean sqlE = false;
+                boolean cnf = false;
+
+                @Override
+                public Void doInBackground() {
+                    try {
+                        ((Main) parent).api.setDbInfo(databaseServerInput.getText(),
+                                databaseNameInput.getText(),
+                                portNumberInput.getValue().toString(),
+                                databaseUsernameInput.getText(),
+                                password);
+                    }
+                    catch (SQLException sqlException) {
+                        sqlE = true;
+                    }
+                    catch (ClassNotFoundException cnfE) {
+                        cnf = true;
+                    }
+
+                    return null;
+                }
+
+                @Override
+                public void done() {
+                    if(sqlE) {
+
+                        JOptionPane.showMessageDialog(window,
+                                Main.getString("itemLoc_error_message_databaseConnFail"),
+                                Main.getString("itemLoc_error_title_databaseConnFail"),
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                    else if(cnf) {
+                        JOptionPane.showMessageDialog(window,
+                                Main.getString("itemLoc_error_message_driverMissing"),
+                                Main.getString("itemLoc_error_title_driverMissing"),
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                    else {
+                        Main.setSettingDatabaseName(databaseNameInput.getText());
+                        Main.setSettingDatabaseServer(databaseServerInput.getText());
+                        Main.setSettingDatabaseUsername(databaseUsernameInput.getText());
+                        Main.setSettingImagePath(imagesInput.getText());
+                        Main.setSettingDatabasePassword(password);
+                        Main.setSettingPortNumber((int) portNumberInput.getValue());
+
+                        Main.setSettingDbTimeout((int)timeoutInput.getValue());
+
+                        dispose();
+                    }
+                }
+            };
+
+            Main.showBackgroundPopup(contentPane, Main.getString("databaseQueryWindow_message"), Main.getString("databaseQueryWindow_title"), worker);
         }
     }
 
@@ -162,6 +229,10 @@ public class ItemLocationsWindow extends JDialog {
         final JFileChooser fc = new JFileChooser();
 
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+        // Default to directory in text box
+        if(imagesInput.getText() != null && !imagesInput.getText().equals(""))
+            fc.setCurrentDirectory(new File(imagesInput.getText()));
 
         int returnVal = fc.showOpenDialog(parent);
 

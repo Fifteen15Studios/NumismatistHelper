@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Implementation-Title: Numismatist API
+Implementation-Version: 0.1

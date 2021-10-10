@@ -1,15 +1,18 @@
-import items.Coin;
-import items.CoinSet;
-import items.DatabaseConnection;
+import items.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-public class AddCoinScreen {
+public class AddCoinScreen extends AddSetItemScreen {
 
     private JButton cancelButton;
     private JPanel addCoinPanel;
@@ -20,10 +23,13 @@ public class AddCoinScreen {
     private JButton nickelButton;
     private JButton dimeButton;
     private JButton quarterButton;
+    private JButton halfButton;
+    private JButton dollarButton;
+    private AutoComboBox currencyInput;
     private JTextField yearInput;
-    private JTextField countryInput;
-    private JComboBox mintMarkComboBox;
-    private JComboBox gradeComboBox;
+    private AutoComboBox countryInput;
+    private AutoComboBox mintMarkComboBox;
+    private AutoComboBox gradeComboBox;
     private JCheckBox gradedCheckBox;
     private JCheckBox errorCheckBox;
     private JTextField errorTypeInput;
@@ -38,56 +44,79 @@ public class AddCoinScreen {
     private JButton revSetButton;
     private JButton revRemoveButton;
     private JTextArea noteInput;
-    private JButton addAnotherButton;
+    private JButton saveNewButton;
     private JPanel obvPicPanel;
     private JPanel revPicPanel;
-
-    private final JFrame parent;
-
-    private boolean editingSet = false;
-    private boolean fromCollection = false;
+    private JButton saveCopyButton;
+    private JComboBox locationDropDown;
+    private JButton addContainerButton;
+    private JScrollPane scrollPane;
 
     private Coin coin;
-    private CoinSet set = null;
-
-    private boolean validObvImg = false;
-    private boolean validRevImg = false;
-
-    private String obvImageLocation = "";
-    private String revImageLocation = "";
 
     public AddCoinScreen(JFrame parent) {
         this(parent, new Coin());
     }
 
-    public AddCoinScreen(JFrame parent, final Coin coin) {
-        this.parent = parent;
+    public AddCoinScreen(JFrame parent, final Coin startCoin) {
+        super(parent);
 
-        this.coin = coin;
+        setReturnTab(TAB_COINS);
 
-        pennyButton.addActionListener(e -> denominationInput.setText("" + Coin.PENNY));
-        nickelButton.addActionListener(e -> denominationInput.setText("" + Coin.NICKEL));
-        dimeButton.addActionListener(e -> denominationInput.setText("" + Coin.DIME));
-        quarterButton.addActionListener(e -> denominationInput.setText("" + Coin.QUARTER));
+        setImageObvLocationInput(imageObvLocationInput);
+        setImageRevLocationInput(imageRevLocationInput);
+
+        setObvPicPanel(obvPicPanel);
+        setRevPicPanel(revPicPanel);
+
+        api = ((Main) parent).api;
+
+        api.setCountryListener(new NumismatistAPI.CountryListener() {
+            @Override
+            public void countryListChanged(@NotNull ArrayList<Country> countries) {
+                //Update Country and Currency lists without changing selection
+                Object curCountry = countryInput.getSelectedItem();
+                Object curCurrency = currencyInput.getSelectedItem();
+                ComboBoxHelper.setupBoxes(countryInput, yearInput, currencyInput, errorDisplay, api);
+                if(curCountry != null && !curCountry.equals(""))
+                    countryInput.setSelectedItem(curCountry);
+                if(curCurrency != null && !curCurrency.equals(""))
+                    currencyInput.setSelectedItem(curCurrency);
+            }
+        });
+
+        this.coin = startCoin;
+
+        // Used to format numbers
+        DecimalFormat format = new DecimalFormat();
+        format.applyPattern("0.00");
+
+        pennyButton.addActionListener(e -> denominationInput.setText(format.format(Coin.PENNY)));
+        nickelButton.addActionListener(e -> denominationInput.setText(format.format(Coin.NICKEL)));
+        dimeButton.addActionListener(e -> denominationInput.setText(format.format(Coin.DIME)));
+        quarterButton.addActionListener(e -> denominationInput.setText(format.format(Coin.QUARTER)));
+        halfButton.addActionListener(e -> denominationInput.setText(format.format(Coin.HALF_DOLLAR)));
+        dollarButton.addActionListener(e -> denominationInput.setText(format.format(Coin.DOLLAR)));
 
         errorCheckBox.addActionListener(e -> errorTypeInput.setEnabled(errorCheckBox.isSelected()));
 
-        for(int i = 0; i < Coin.Companion.getMINT_MARKS().length; i++) {
-            mintMarkComboBox.addItem(Coin.Companion.getMINT_MARKS()[i]);
-        }
+        ComboBoxHelper.setupBoxes(countryInput, yearInput, currencyInput, errorDisplay, api);
 
-        for(int i = 0; i < Coin.Companion.getCONDITIONS().length; i++) {
-            gradeComboBox.addItem(Coin.Companion.getCONDITIONS()[i]);
-        }
+        // Restrict input
+        ((PlainDocument) denominationInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getDenominationFilter());
+        ((PlainDocument) yearInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getCurrentYearFilter());
+        ((PlainDocument) valueInput.getDocument()).setDocumentFilter(MyDocFilter.Companion.getValueFilter());
+
+        ComboBoxHelper.setContainerList(locationDropDown, api, addContainerButton, parent);
 
         obvSetButton.addActionListener(e -> {
-            obvImageLocation = imageObvLocationInput.getText();
-            addImage(obvImageLocation, true);
+            setObvImageLocation(imageObvLocationInput.getText());
+            addImage(getObvImageLocation(), true);
         });
 
         revSetButton.addActionListener(e -> {
-            revImageLocation = imageRevLocationInput.getText();
-            addImage(revImageLocation, false);
+            setRevImageLocation(imageRevLocationInput.getText());
+            addImage(getRevImageLocation(), false);
         });
 
         obvBrowseButton.addActionListener( e -> openFileChooser(true));
@@ -96,39 +125,44 @@ public class AddCoinScreen {
         obvRemoveButton.addActionListener(e -> removeImage(true));
         revRemoveButton.addActionListener(e -> removeImage(false));
 
-        addAnotherButton.addActionListener( e -> {
-            if(saveCoin()) {
-                errorDisplay.setForeground(Color.GREEN);
-                errorDisplay.setText("Coin saved!");
-
-                setCoin(new Coin());
-
-                editingSet = false;
-                if(set != null)
-                    parent.setTitle("Add Coin to Set");
-                else
-                    parent.setTitle("Add Coin");
-            }
-        });
-
-        OKButton.addActionListener(e -> {
-
-            if(saveCoin())
-                goHome();
-        });
+        saveNewButton.addActionListener(e -> saveCoin(getBUTTON_SAVE_NEW()));
+        saveCopyButton.addActionListener(e -> saveCoin(getBUTTON_SAVE_COPY()));
+        OKButton.addActionListener(e -> saveCoin(getBUTTON_OK()));
         cancelButton.addActionListener(e -> goHome());
+
+        parent.getRootPane().setDefaultButton(OKButton);
+        // Set initial focus
+        SwingUtilities.invokeLater(() -> countryInput.requestFocus());
 
         setInfo();
     }
 
     private void setInfo() {
         coinTypeInput.setText(coin.getName());
-        countryInput.setText(coin.getCountry());
+        String countryName = Country.Companion.getCountry(api.getCountries(), coin.getCountryName()).getName();
+
+        if(!countryName.isBlank())
+            ((JTextField)countryInput.getEditor().getEditorComponent()).setText(countryName);
+
         if(coin.getYear() != 0)
             yearInput.setText("" + coin.getYear());
         else
             yearInput.setText("");
-        mintMarkComboBox.setSelectedItem(coin.getMintMark());
+
+        ((JTextField)mintMarkComboBox.getEditor().getEditorComponent()).setText(coin.getMintMark());
+
+        // Must happen after country and year are set
+        try {
+            ComboBoxHelper.setCurrency(countryInput, yearInput, currencyInput, api.getCountries());
+        }
+        catch (NumberFormatException nfe) {
+            errorDisplay.setForeground(Main.COLOR_ERROR);
+            errorDisplay.setText(Main.getString("error_invalidDate"));
+        }
+
+        if(!coin.getCurrency().getNameAbbr().equals("")) {
+            ((JTextField) currencyInput.getEditor().getEditorComponent()).setText(coin.getCurrency().getName());
+        }
 
         if(coin.getDenomination() != 0.0) {
             // Format the number properly
@@ -153,18 +187,23 @@ public class AddCoinScreen {
             valueInput.setText("");
 
         gradedCheckBox.setSelected(coin.getGraded());
-        gradeComboBox.setSelectedItem(coin.getCondition());
+        ((JTextField)gradeComboBox.getEditor().getEditorComponent()).setText(coin.getCondition());
         errorCheckBox.setSelected(coin.getError());
         noteInput.setText(coin.getNote());
 
+        locationDropDown.setSelectedItem(api.findContainer(coin.getContainerId()).getName());
+        //((JTextField)locationDropDown.getEditor().getEditorComponent()).setText(api.findContainer(coin.getContainerId()).getName());
+
         // Set images
-        if(!coin.getObvImgExt().equals("")) {
-            obvImageLocation = coin.getImagePath(true);
-            addImage(obvImageLocation, true);
+        if(!coin.getObvImgPath().equals("")) {
+            setObvImageLocation(coin.getObvImgPath());
+            addImage(getObvImageLocation(), true);
+            imageObvLocationInput.setText(getObvImageLocation());
         }
-        if(!coin.getRevImgExt().equals("")) {
-            revImageLocation = coin.getImagePath(false);
-            addImage(revImageLocation, false);
+        if(!coin.getRevImgPath().equals("")) {
+            setRevImageLocation(coin.getRevImgPath());
+            addImage(getRevImageLocation(), false);
+            imageRevLocationInput.setText(getRevImageLocation());
         }
     }
 
@@ -172,24 +211,49 @@ public class AddCoinScreen {
         return addCoinPanel;
     }
 
-    private boolean saveCoin() {
+    private void saveCoin(final int button) {
         coin.setName(coinTypeInput.getText());
-        coin.setCountry(countryInput.getText());
 
         // True if input is invalid
         boolean invalid = false;
         String invalidText = "";
+
+        // Set country ID
+        if(countryInput.getSelectedIndex() != -1) {
+            coin.setCountryName(countryInput.ids[countryInput.getSelectedIndex()]);
+        }
+        else {
+            invalid = true;
+            if(!invalidText.equals(""))
+                invalidText += "\n";
+            invalidText += Main.getString("error_emptyCountry");
+        }
+
+        // Set currency
+        if(currencyInput.getSelectedIndex() != -1) {
+            coin.setCurrency(api.findCurrency(currencyInput.ids[currencyInput.getSelectedIndex()]));
+        }
+        else {
+            invalid = true;
+            if(!invalidText.equals(""))
+                invalidText += "\n";
+            invalidText += Main.getString("error_emptyCurrency");
+        }
 
         try {
             coin.setYear(Integer.parseInt(yearInput.getText()));
         }
         catch (NumberFormatException ex) {
             invalid = true;
-            invalidText += "Year format is incorrect. Cannot be blank and must be an integer (whole number).";
+            if(!invalidText.equals(""))
+                invalidText += "\n";
+            invalidText += Main.getString("error_emptyYear");
         }
 
-        if(mintMarkComboBox.getSelectedItem() != null)
-            coin.setMintMark(mintMarkComboBox.getSelectedItem().toString());
+        if(((JTextField)mintMarkComboBox.getEditor().getEditorComponent()).getText().equals(""))
+            coin.setMintMark("");
+        else
+            coin.setMintMark(((JTextField)mintMarkComboBox.getEditor().getEditorComponent()).getText());
 
         try {
             coin.setDenomination(Double.parseDouble(denominationInput.getText()));
@@ -197,8 +261,7 @@ public class AddCoinScreen {
             invalid = true;
             if (!invalidText.equals(""))
                 invalidText += "\n";
-
-            invalidText += "Denomination format incorrect. Cannot be blank and must be a number.";
+            invalidText += Main.getString("error_emptyDenomination");
         }
 
         // If value box is not empty
@@ -210,12 +273,12 @@ public class AddCoinScreen {
                 if (!invalidText.equals(""))
                     invalidText += "\n";
 
-                invalidText += "Value format incorrect. Must be a number.";
+                invalidText += Main.getString("error_emptyValue");
             }
         }
 
-        if(gradeComboBox.getSelectedItem() != null)
-            coin.setCondition(gradeComboBox.getSelectedItem().toString());
+        if(((JTextField)gradeComboBox.getEditor().getEditorComponent()).getText() != null)
+            coin.setCondition(((JTextField)gradeComboBox.getEditor().getEditorComponent()).getText());
         coin.setGraded(gradedCheckBox.isSelected());
 
         coin.setError(errorCheckBox.isSelected());
@@ -227,203 +290,86 @@ public class AddCoinScreen {
 
         coin.setNote(Main.escapeForJava(noteInput.getText()));
 
+        if(locationDropDown.getSelectedItem() != null &&
+            !locationDropDown.getSelectedItem().equals("")) {
+            coin.setContainerId(api.findContainer(locationDropDown.getSelectedItem().toString()).getId());
+        }
+
+        if(getValidObvImg())
+            coin.setObvImgPath(imageObvLocationInput.getText());
+        if(getValidRevImg())
+            coin.setRevImgPath(imageRevLocationInput.getText());
+
         // If some fields contain invalid data
         if(invalid) {
-            errorDisplay.setForeground(Color.RED);
+            errorDisplay.setForeground(Main.COLOR_ERROR);
             errorDisplay.setText(invalidText);
         }
         else
         {
-            int rows = coin.saveToDb(((Main)parent).databaseConnection);
+            errorDisplay.setForeground(Color.BLACK);
+            errorDisplay.setText(Main.getString("addCoin_message_saving"));
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
 
-            String successMessage = ((Main)parent).databaseConnection.wasSuccessful(rows);
+                int rows = 0;
 
-            if(successMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)){
-                errorDisplay.setText("");
+                @Override
+                public Void doInBackground() {
+                    rows = coin.saveToDb(api);
+                    return null;
+                }
 
-                // Add to set if necessary
-                if(set != null && !editingSet)
-                    set.addCoin(coin);
+                @Override
+                public void done() {
+                    String successMessage = api.getSuccessMessage(rows);
 
-                String errorMessage = "";
+                    if(successMessage.equals(NumismatistAPI.Companion.getString("db_message_success"))){
+                        errorDisplay.setForeground(Main.COLOR_SUCCESS);
+                        errorDisplay.setText(MessageFormat.format(Main.getString("addCoin_message_saved"),
+                                coin.toString()));
 
-                // Copy the image to a new location, then use that location
-                if(validObvImg) {
-                    String path = imageObvLocationInput.getText();
-                    coin.setObvImgExt(path.substring(path.lastIndexOf('.')));
+                        // Add to set if necessary
+                        if(getParentSet() != null && !getEditingParent())
+                            getParentSet().addItem(coin);
 
-                    if(Main.copyFile(imageObvLocationInput.getText(),
-                            coin.getImagePath(true))) {
+                        if(button == getBUTTON_SAVE_COPY()) {
+                            Coin newCoin = coin.copy();
+                            newCoin.setSet(null);
+                            newCoin.setId(DatabaseItem.ID_INVALID);
+                            newCoin.setSlotId(DatabaseItem.ID_INVALID);
+                            newCoin.setObvImgPath("");
+                            newCoin.setRevImgPath("");
+                            newCoin.setContainerId(DatabaseItem.ID_INVALID);
 
-                        String sql = "UPDATE Coins SET ObvImgExt=\"" + coin.getObvImgExt() + "\"\n" +
-                                "WHERE ID=" + coin.getId() + ";";
+                            if(getParentSet() != null) {
+                                newCoin.setSet(getParentSet());
+                                getParent().setTitle(Main.getString("addCoin_title_addToSet"));
+                            }
+                            else
+                                getParent().setTitle(Main.getString("addCoin_title_add"));
 
-                        rows = ((Main) parent).databaseConnection.runUpdate(sql);
-                        String extMessage = ((Main) parent).databaseConnection.wasSuccessful(rows);
-                        if (!extMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                            errorMessage += extMessage;
+                            setCoin(newCoin);
                         }
+                        else if(button == getBUTTON_SAVE_NEW()) {
+                            setCoin(new Coin());
+
+                            if(getParentSet() != null)
+                                getParent().setTitle(Main.getString("addCoin_title_addToSet"));
+                            else
+                                getParent().setTitle(Main.getString("addCoin_title_add"));
+                        }
+                        else if(button == getBUTTON_OK())
+                            goHome();
                     }
                     else {
-                        errorMessage = "Problem saving obverse image. Please try again.";
+                        errorDisplay.setForeground(Main.COLOR_ERROR);
+                        errorDisplay.setText(successMessage);
                     }
                 }
-                else {
-                    // Delete the file
-                    new File(coin.getImagePath(true)).delete();
-                    coin.setObvImgExt("");
+            };
 
-                    // Remove image extension from database
-                    String sql = "UPDATE Coins SET ObvImgExt=null\n" +
-                            "WHERE ID=" + coin.getId() + ";";
-
-                    ((Main)parent).databaseConnection.runUpdate(sql);
-                }
-                if(validRevImg) {
-                    String path = imageRevLocationInput.getText();
-                    coin.setRevImgExt(path.substring(path.lastIndexOf('.')));
-
-                    if(Main.copyFile(imageRevLocationInput.getText(),
-                            coin.getImagePath(false))) {
-
-                        String sql = "UPDATE Coins SET RevImgExt=\"" + coin.getRevImgExt() + "\"\n" +
-                                "WHERE ID=" + coin.getId() + ";";
-
-                        rows = ((Main) parent).databaseConnection.runUpdate(sql);
-                        String extMessage = ((Main) parent).databaseConnection.wasSuccessful(rows);
-                        if (!extMessage.equals(DatabaseConnection.SUCCESS_MESSAGE)) {
-                            if (!errorMessage.equals(""))
-                                errorMessage += extMessage;
-                        }
-                    }
-                    else {
-                        if (!errorMessage.equals(""))
-                            errorMessage += "\n";
-                        errorMessage += "Problem saving reverse image. Please try again.";
-                    }
-                }
-                else {
-                    // Delete the file
-                    new File(coin.getImagePath(false)).delete();
-                    coin.setRevImgExt("");
-
-                    // Remove image extension from database
-                    String sql = "UPDATE Coins SET RevImgExt=null\n" +
-                            "WHERE ID=" + coin.getId() + ";";
-
-                    ((Main)parent).databaseConnection.runUpdate(sql);
-                }
-
-                if(!errorMessage.equals("")) {
-                    invalid = true;
-                    errorDisplay.setForeground(Color.RED);
-                    errorDisplay.setText(errorMessage);
-                }
-            }
-            else {
-                errorDisplay.setText(successMessage);
-                invalid = true;
-            }
+            worker.execute();
         }
-
-        return !invalid;
-    }
-
-    private void goHome() {
-        if(set != null) {
-            AddSetScreen setScreen = new AddSetScreen(parent, set);
-            setScreen.setFromCollection(fromCollection);
-            setScreen.setInfo();
-
-            ((Main) parent).changeScreen(setScreen.getPanel(), "");
-        }
-        else if(fromCollection) {
-            CollectionTableScreen collectionTableScreen = new CollectionTableScreen(parent);
-
-            ((Main) parent).changeScreen(collectionTableScreen.getPanel(), "Collection");
-        }
-        else {
-            ((Main) parent).changeScreen(((Main) parent).getPanel(), "");
-        }
-    }
-
-    void addImage(String pathToImage, boolean obverse) {
-
-        try {
-            ImageIO.read(new File(pathToImage));
-
-            if(obverse) {
-                obvImageLocation = pathToImage;
-                validObvImg = true;
-                // Force it to draw immediately
-                obvPicPanel.update(obvPicPanel.getGraphics());
-            }
-            else {
-                revImageLocation = pathToImage;
-                validRevImg = true;
-                // Force it to draw immediately
-                revPicPanel.update(revPicPanel.getGraphics());
-            }
-
-            // Clear error text
-            errorDisplay.setText("");
-        }
-        catch (IOException e) {
-            errorDisplay.setText("Error opening file");
-        }
-    }
-
-    void removeImage(boolean obverse) {
-        if(obverse) {
-            imageObvLocationInput.setText("");
-            validObvImg = false;
-        }
-        else {
-            imageRevLocationInput.setText("");
-            validRevImg = false;
-        }
-
-        errorDisplay.setText("");
-    }
-
-    void openFileChooser(boolean obverse) {
-        final JFileChooser fc = new JFileChooser();
-
-        ImageFilter imageFilter = new ImageFilter();
-
-        fc.addChoosableFileFilter(imageFilter);
-        fc.setFileFilter(imageFilter);
-        int returnVal = fc.showOpenDialog(parent);
-
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-
-            if(obverse) {
-                obvImageLocation = file.getAbsolutePath();
-                imageObvLocationInput.setText(obvImageLocation);
-            }
-            else {revImageLocation = file.getAbsolutePath();
-                imageRevLocationInput.setText(revImageLocation);
-            }
-
-            addImage(file.getAbsolutePath(), obverse);
-        } else if(returnVal != JFileChooser.CANCEL_OPTION) {
-            errorDisplay.setText("Error retrieving file");
-        }
-    }
-
-    void setEditingSet(boolean editing) {
-        this.editingSet = editing;
-    }
-
-    public void setSet(CoinSet set) {
-        this.set = set;
-
-        setInfo();
-    }
-
-    public CoinSet getSet() {
-        return set;
     }
 
     public void setCoin(Coin coin) {
@@ -431,11 +377,17 @@ public class AddCoinScreen {
         setInfo();
     }
 
-    public void setFromCollection(boolean fromCollection) {
-        this.fromCollection = fromCollection;
-    }
-
     private void createUIComponents() {
+
+        countryInput = new AutoComboBox();
+        currencyInput = new AutoComboBox();
+        gradeComboBox = new AutoComboBox();
+        mintMarkComboBox = new AutoComboBox();
+        scrollPane = new JScrollPane();
+        scrollPane.setBorder(null);
+
+        ComboBoxHelper.setKeyWord(mintMarkComboBox, new ArrayList(Arrays.asList(Coin.Companion.getMINT_MARKS())));
+        ComboBoxHelper.setKeyWord(gradeComboBox, new ArrayList(Arrays.asList(Coin.Companion.getCONDITIONS())));
 
         // Allow resizing of images
         obvPicPanel = new JPanel() {
@@ -445,26 +397,28 @@ public class AddCoinScreen {
                 super.paintComponent(g);
 
                 try {
-                    Image img = ImageIO.read(new File(obvImageLocation));
+                    Image img = ImageIO.read(new File(getObvImageLocation()));
 
-                    double heightFactor = (float)getHeight() / img.getHeight(this);
-                    double widthFactor = (float)getWidth() / img.getWidth(this);
+                    if(img != null) {
 
-                    double scaleFactor = Math.min(heightFactor, widthFactor);
+                        double heightFactor = (float) getHeight() / img.getHeight(this);
+                        double widthFactor = (float) getWidth() / img.getWidth(this);
 
-                    int newHeight = (int)(img.getHeight(this) * scaleFactor);
-                    int newWidth = (int)(img.getWidth(this) * scaleFactor);
+                        double scaleFactor = Math.min(heightFactor, widthFactor);
 
-                    Image scaled;
-                    // Only scale image if it's larger than we want
-                    if(scaleFactor < 1) {
-                        // Scale to new size
-                        scaled = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+                        int newHeight = (int) (img.getHeight(this) * scaleFactor);
+                        int newWidth = (int) (img.getWidth(this) * scaleFactor);
+
+                        Image scaled;
+                        // Only scale image if it's larger than we want
+                        if (scaleFactor < 1) {
+                            // Scale to new size
+                            scaled = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+                        } else
+                            scaled = img;
+
+                        g.drawImage(scaled, 0, 0, null);
                     }
-                    else
-                        scaled = img;
-
-                    g.drawImage(scaled, 0, 0, null);
                 } catch (IOException ignore) {
                 }
             }
@@ -479,7 +433,7 @@ public class AddCoinScreen {
 
                 try {
 
-                    Image img = ImageIO.read(new File(revImageLocation));
+                    Image img = ImageIO.read(new File(getRevImageLocation()));
 
                     double heightFactor = (float)getHeight() / img.getHeight(this);
                     double widthFactor = (float)getWidth() / img.getWidth(this);

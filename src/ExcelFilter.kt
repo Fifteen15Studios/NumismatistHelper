@@ -19,8 +19,8 @@ object ExcelExtensions {
 }
 
 class ExcelFilter : FileFilter() {
-    override fun accept(f: File?): Boolean {
-        if (f!!.isDirectory) {
+    override fun accept(f: File): Boolean {
+        if (f.isDirectory) {
             return true
         }
 
@@ -31,12 +31,12 @@ class ExcelFilter : FileFilter() {
     }
 
     override fun getDescription(): String {
-        var string =  "Excel ("
+        var string =  "Excel Files ("
 
         for((count, extension) in ExcelExtensions.ACCEPTABLE_EXTENSIONS.withIndex()) {
             if (count > 0)
                 string += ", "
-            string += ".$extension"
+            string += "*.$extension"
         }
 
         string += ")"

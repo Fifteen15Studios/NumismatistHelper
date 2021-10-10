@@ -1,72 +1,114 @@
-import items.Bill;
-import items.Coin;
-import items.CoinSet;
+import items.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.swing.table.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
+// TODO: Add tree view - especially for sets and/or container view.
+//  Build custom tree view
 public class CollectionTableScreen {
     private JButton OKButton;
     private JTabbedPane tabbedPane;
     private JPanel panel;
     private JButton exportButton;
+    private JButton cancelButton;
 
-    private final JTable coinsTable;
-    private final JTable setsTable;
-    private final JTable billsTable;
+    private final MyTable coinsTable;
+    private final MyTable coinsTotalTable;
+    private final MyTable setsTable;
+    private final MyTable setsTotalTable;
+    private final MyTable billsTable;
+    private final MyTable billsTotalTable;
 
-    JFrame parent;
+    private final JFrame parent;
 
     private ArrayList<Coin> coins;
-    private ArrayList<CoinSet> sets;
+    private ArrayList<Set> sets;
     private ArrayList<Bill> bills;
+
+    private Set set = null;
+
+    public SetItem selectedItem = null;
+
+    private ActionListener okListener;
+
+    private final NumismatistAPI api;
 
     public CollectionTableScreen(JFrame parent) {
 
         this.parent = parent;
 
-        JScrollPane scrollPane1 = new JScrollPane();
-        JScrollPane scrollPane2 = new JScrollPane();
-        JScrollPane scrollPane3 = new JScrollPane();
-        coinsTable = new JTable();
-        setsTable = new JTable();
-        billsTable = new JTable();
+        api = ((Main) parent).api;
+
+        // Add Panels
+        JPanel coinsPanel = new JPanel();
+        JPanel setsPanel = new JPanel();
+        JPanel billsPanel = new JPanel();
+        coinsPanel.setLayout(new BoxLayout(coinsPanel, BoxLayout.PAGE_AXIS));
+        setsPanel.setLayout(new BoxLayout(setsPanel, BoxLayout.PAGE_AXIS));
+        billsPanel.setLayout(new BoxLayout(billsPanel, BoxLayout.PAGE_AXIS));
+
+        // Add scroll panes
+        JScrollPane coinsScrollPane = new JScrollPane();
+        JScrollPane setsScrollPane = new JScrollPane();
+        JScrollPane billsScrollPane = new JScrollPane();
+
+        // Setup tables
+        coinsTable = new MyTable();
+        coinsTotalTable = new MyTable();
+        setsTable = new MyTable();
+        setsTotalTable = new MyTable();
+        billsTable = new MyTable();
+        billsTotalTable = new MyTable();
 
         coinsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        setsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        billsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         setCoinsTable();
-        scrollPane1.getViewport().add(coinsTable);
+        coinsScrollPane.getViewport().add(coinsTable);
 
         setSetsTable();
-        scrollPane2.getViewport().add(setsTable);
+        setsScrollPane.getViewport().add(setsTable);
 
         setBillsTable();
-        scrollPane3.getViewport().add(billsTable);
+        billsScrollPane.getViewport().add(billsTable);
 
-        // Remove the default tab
-        tabbedPane.removeTabAt(0);
+        coinsPanel.add(coinsScrollPane);
+        coinsPanel.add(coinsTotalTable);
+        tabbedPane.addTab(Main.getString("viewColl_tab_coins"), coinsPanel);
+        setsPanel.add(setsScrollPane);
+        setsPanel.add(setsTotalTable);
+        tabbedPane.addTab(Main.getString("viewColl_tab_sets"), setsPanel);
+        billsPanel.add(billsScrollPane);
+        billsPanel.add(billsTotalTable);
+        tabbedPane.addTab(Main.getString("viewColl_tab_bills"), billsPanel);
 
-        tabbedPane.addTab("Coins", scrollPane1);
-        tabbedPane.addTab("Sets", scrollPane2);
-        tabbedPane.addTab("Bills", scrollPane3);
+        okListener = e -> goHome();
 
-        OKButton.addActionListener( e-> goHome());
+        OKButton.addActionListener(okListener);
+
+        // Resize columns to fit content
+        coinsTable.resizeColumns();
+        coinsTotalTable.resizeColumns();
+        setsTotalTable.resizeColumns();
+        setsTotalTable.resizeColumns();
+        billsTable.resizeColumns();
+        billsTotalTable.resizeColumns();
 
         exportButton.addActionListener( e -> {
 
             JFileChooser fc = new JFileChooser();
-            fc.setFileFilter(new ExcelFilter());
+            fc.setFileFilter(new CsvFilter());
             fc.setAcceptAllFileFilterUsed(false);
 
             int returnVal = fc.showSaveDialog(parent);
@@ -94,12 +136,110 @@ public class CollectionTableScreen {
                 }
 
                 if(!acceptable)
-                    path += ".xlsx";
+                    path += ".csv";
 
                 export(path);
             }
 
         });
+
+        api.setCoinListener(new NumismatistAPI.CoinListener() {
+            @Override
+            public void coinListRetrievedFromFb(@NotNull ArrayList<Coin> coins) {
+                setCoinsTable();
+            }
+        });
+        api.setBillListener(new NumismatistAPI.BillListener() {
+            @Override
+            public void billListRetrievedFromFb(@NotNull ArrayList<Bill> bills) {
+                setBillsTable();
+            }
+        });
+        api.setSetListener(new NumismatistAPI.SetListener() {
+            @Override
+            public void setListRetrievedFromFb(@NotNull ArrayList<Set> sets) {
+                setSetsTable();
+            }
+        });
+
+        parent.getRootPane().setDefaultButton(OKButton);
+    }
+
+    public CollectionTableScreen(JFrame parent, JDialog dialog) {
+        this(parent);
+
+        exportButton.setVisible(false);
+        cancelButton.setVisible(true);
+
+        cancelButton.addActionListener(e -> {
+                selectedItem = null;
+                dialog.setVisible(false);
+        });
+
+        // Remove old listener
+        OKButton.removeActionListener(okListener);
+
+        dialog.getRootPane().setDefaultButton(OKButton);
+
+        //create and add new listener
+        okListener = e -> {
+
+            Object idString;
+
+            if(tabbedPane.getSelectedIndex() == 0) {
+
+                if(coinsTable.getSelectedRow() == -1) {
+                    JOptionPane.showMessageDialog(parent, Main.getString("viewColl_error_noSelectionMessage"),
+                            Main.getString("viewColl_error_noSelectionTitle"), JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    idString = coinsTable.getValueAt(coinsTable.getSelectedRow(), 0);
+                    // If didn't select empty row
+                    if (idString != null) {
+                        int id = Integer.parseInt(idString.toString());
+                        for (Coin coin : coins)
+                            if (coin.getId() == id)
+                                selectedItem = coin;
+                    }
+                    dialog.setVisible(false);
+                }
+            }
+            else if(tabbedPane.getSelectedIndex() == 1) {
+                if(setsTable.getSelectedRow() == -1) {
+                    JOptionPane.showMessageDialog(parent, Main.getString("viewColl_error_noSelectionMessage"),
+                            Main.getString("viewColl_error_noSelectionTitle"), JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    idString = setsTable.getValueAt(setsTable.getSelectedRow(), 0);
+                    // If didn't select empty row
+                    if (idString != null) {
+                        int id = Integer.parseInt(idString.toString());
+                        for (Set selectedSet : sets)
+                            if (selectedSet.getId() == id)
+                                selectedItem = selectedSet;
+                    }
+                    dialog.setVisible(false);
+                }
+            }
+            else if(tabbedPane.getSelectedIndex() == 2) {
+                if(billsTable.getSelectedRow() == -1) {
+                    JOptionPane.showMessageDialog(parent, Main.getString("viewColl_error_noSelectionMessage"),
+                            Main.getString("viewColl_error_noSelectionTitle"), JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    idString = billsTable.getValueAt(billsTable.getSelectedRow(), 0);
+                    // If didn't select empty row
+                    if (idString != null) {
+                        int id = Integer.parseInt(idString.toString());
+                        for (Bill bill : bills)
+                            if (bill.getId() == id)
+                                selectedItem = bill;
+                    }
+                    dialog.setVisible(false);
+                }
+            }
+        };
+        OKButton.addActionListener(okListener);
     }
 
     public JPanel getPanel() {
@@ -107,104 +247,127 @@ public class CollectionTableScreen {
     }
 
     private void setSetsTable() {
-        String[] columnNames = {"ID",
-                "Name",
-                "Year",
-                "Coins",
-                "Face Value",
-                "Value",
-                "Note",};
+        String[] columnNames = {Main.getString("property_set_id"),
+                Main.getString("property_set_year"),
+                Main.getString("property_set_name"),
+                Main.getString("property_set_items"),
+                Main.getString("property_set_faceValue"),
+                Main.getString("property_set_value"),
+                Main.getString("property_set_note"),
+                Main.getString("property_set_container")};
+
+        String[] totalsColumns = {Main.getString("property_set_totals"),
+                Main.getString("property_set_totals_sets"),
+                Main.getString("property_set_totals_items"),
+                Main.getString("property_set_totals_faceValue"),
+                Main.getString("property_set_totals_value")};
 
         try {
-            sets = CoinSet.Companion.getSetsFromSql(((Main) parent).databaseConnection, "");
+            sets = api.getSets();
+            if(set != null) {
+                sets.remove(set);
+
+                ArrayList<Set> setsInSet = new ArrayList<>();
+                for (SetItem item : set.getItems()) {
+                    if (item instanceof Set)
+                        setsInSet.add((Set) item);
+                }
+                sets.removeAll(setsInSet);
+            }
         }
         catch (Exception e) {
             sets = new ArrayList<>();
         }
 
+        DecimalFormat format = new DecimalFormat();
+        format.applyPattern("0.00");
+
         // Show coins
-        Object[][] data = new Object[sets.size() + 1][columnNames.length];
+        Object[][] data = new Object[sets.size()][columnNames.length];
+        Object[][] totalsData = new Object[1][totalsColumns.length];
 
         int count = 0;
 
+        double totalFaceValue = 0.0;
+        double totalValue = 0.0;
+        int itemCount = 0;
+
         // for each set found
-        for (CoinSet set : sets) {
+        for (Set set : sets) {
             String columnData = "";
+
             // For each column
             for(int j = 0; j < columnNames.length; j++) {
                 switch (j) {
-                    case 0 -> columnData = "" + set.getId();
-                    case 1 -> columnData = set.getName();
-                    case 2 -> columnData = "" + set.getYear();
-                    case 3 -> columnData = "" + set.getCoins().size();
-                    case 4 -> {
-                        DecimalFormat format = new DecimalFormat();
-                        format.applyPattern("0.00");
+                    case 0:
+                        columnData = "" + set.getId();
+                        break;
+                    case 1:
+                        columnData = "" + set.getYear();
+                        break;
+                    case 2:
+                        columnData = set.getName();
+                        break;
+                    case 3:
+                        // Add to total for all sets
+                        itemCount += set.getItems().size();
 
-                        String value = format.format(set.getFaceValue());
+                        columnData = "" + set.getItems().size();
+                        break;
+                    case 4:
+                        totalFaceValue += set.getFaceValue();
 
-                        columnData = "" + value;
-                    }
-                    case 5 -> {
-                        DecimalFormat format = new DecimalFormat();
-                        format.applyPattern("0.00");
+                        columnData = format.format(set.getFaceValue());
+                        break;
+                    case 5:
+                        double value;
 
-                        String value = format.format(set.getValue());
+                        // If no value set, use face value
+                        if(set.getValue() == 0.0)
+                            value = set.getFaceValue();
+                        else
+                            value = set.getValue();
 
-                        columnData = "" + value;
-                    }
-                    case 6 -> columnData = set.getNote();
+                        totalValue += value;
+
+                        columnData = format.format(value);
+                        break;
+                    case 6:
+                        columnData = set.getNote();
+                        break;
+                    case 7:
+                        columnData = api.findContainer(set.getContainerId()).getName();
+                        break;
                 }
                 data[count][j] = columnData;
             }
             count++;
         }
 
-
-        data[count][1] = "<HTML><B>Sets: " + sets.size() + "</B></HTML>";
-
-        int coinCount = 0;
-
-        for(CoinSet set : sets)
-        {
-            coinCount += set.getCoins().size();
-        }
-        data[count][3] = "<HTML><B>" + coinCount + "</B></HTML>";
-
-        double totalFaceValue = 0.0;
-        for(CoinSet set : sets) {
-            totalFaceValue += set.getFaceValue();
-        }
-
-        DecimalFormat format = new DecimalFormat();
-        format.applyPattern("0.00");
-
-        String value = format.format(totalFaceValue);
-
-        data[count][4] = "<HTML><B>" + value + "</B></HTML>";
-
-        // Add total current value
-        double totalValue = 0.0;
-        for(CoinSet set : sets) {
-            totalValue += set.getValue();
-        }
-
-        value = format.format(totalValue);
-
-        data[count][5] = "<HTML><B>" + value + "</B></HTML>";
-
-        for(int i = 0; i < columnNames.length; i++)
-            if(data[count][i] == null || data[count][i].equals(""))
-                data[count][i] = " ";
+        // Put totals in the final row
+        totalsData[0][0] = "<HTML><B>" + Main.getString("property_set_totals") + "</B></HTML>";
+        totalsData[0][1] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_sets"),
+                sets.size()) + "</B></HTML>";
+        totalsData[0][2] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_items"),
+                itemCount) + "</B></HTML>";
+        totalsData[0][3] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_faceValue"),
+                format.format(totalFaceValue)) + "</B></HTML>";
+        totalsData[0][4] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_value"),
+                format.format(totalValue)) + "</B></HTML>";
 
         // Set data for table
         DefaultTableModel dataModel = new DefaultTableModel();
         dataModel.setDataVector(data, columnNames);
         setsTable.setModel(dataModel);
 
+        DefaultTableModel totalDataModel = new DefaultTableModel();
+        totalDataModel.setDataVector(totalsData, totalsColumns);
+        setsTotalTable.setModel(totalDataModel);
+
         // Make table non-editable, and single selection
         setsTable.setDefaultEditor(Object.class, null);
         setsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setsTotalTable.setEnabled(false);
 
         // Add right click listener
         setsTable.addMouseListener(new MouseAdapter() {
@@ -220,12 +383,12 @@ public class CollectionTableScreen {
                     if(index != -1 ) {
 
                         // Don't error out if totals row selected
-                        CoinSet selectedSet = null;
+                        Set selectedSet = null;
                         try {
                             // Find the ID of the set that has been clicked
                             int ID = Integer.parseInt((String)setsTable.getValueAt(index, 0));
                             // Find the set that has been clicked
-                            for(CoinSet set : sets)
+                            for(Set set : sets)
                                 if(set.getId() == ID) {
                                     selectedSet = set;
                                     break;
@@ -235,35 +398,65 @@ public class CollectionTableScreen {
                             return;
                         }
 
-                        final CoinSet finalSet = selectedSet;
+                        if(selectedSet == null)
+                            return;
+
+                        final Set finalSet = selectedSet;
 
                         // Create right click menu
                         final JPopupMenu setListRightClickMenu = new JPopupMenu();
-                        JMenuItem copy = new JMenuItem("Copy");
+                        JMenuItem copy = new JMenuItem(Main.getString("viewColl_rtClick_copySet"));
                         // Create copy item
                         copy.addActionListener(e1 -> {
                             // Show edit set screen
-                            AddSetScreen addSetScreen = new AddSetScreen(parent, finalSet.copy());
+                            AddSetScreen addSetScreen;
+                            addSetScreen = new AddSetScreen(parent, finalSet.copy());
 
                             addSetScreen.setFromCollection(true);
-                            ((Main) parent).changeScreen(addSetScreen.getPanel(), "New Set");
+                            ((Main) parent).changeScreen(addSetScreen.getPanel(), Main.getString("addSet_title_add"));
                         });
-                        JMenuItem editSet = new JMenuItem("Edit");
+                        JMenuItem editSet = new JMenuItem(Main.getString("viewColl_rtClick_editSet"));
                         editSet.addActionListener(e1 -> {
                             // Show edit set screen
                             AddSetScreen addSetScreen = new AddSetScreen(parent, finalSet);
 
+                            String name;
+                            if(finalSet.getName().equals(""))
+                                name = Main.getString("property_set_toString");
+                            else
+                                name = finalSet.getName();
+
                             addSetScreen.setFromCollection(true);
-                            ((Main) parent).changeScreen(addSetScreen.getPanel(), "Edit Set");
+                            ((Main) parent).changeScreen(addSetScreen.getPanel(), MessageFormat.format(Main.getString("addSet_title_edit"), name));
                         });
-                        JMenuItem removeSet = new JMenuItem("Remove from Collection");
+                        JMenuItem removeSet = new JMenuItem(Main.getString("viewColl_rtClick_removeSet"));
                         removeSet.addActionListener(e1 ->{
                             // Show an "Are you sure?" prompt
-                            int option = JOptionPane.showConfirmDialog(parent, "Are you sure you want to remove this set?", "Delete Set", JOptionPane.YES_NO_OPTION);
+                            int option = JOptionPane.showConfirmDialog(parent,
+                                    Main.getString("viewColl_dialog_removeSetMessage"),
+                                    Main.getString("viewColl_dialog_removeSetTitle"),
+                                    JOptionPane.YES_NO_OPTION);
+                            String errorMessage = "";
 
                             if(option == JOptionPane.YES_OPTION)
                             {
-                                finalSet.deleteFromDb(((Main)parent).databaseConnection);
+                                try {
+                                    if(finalSet.removeFromDb(api)) {
+                                        if (!finalSet.deleteObvImage()) {
+                                            errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), finalSet.getObvImgPath());
+                                        }
+                                        if (!finalSet.deleteRevImage()) {
+                                            errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), finalSet.getRevImgPath());
+                                        }
+                                    }
+                                } catch (SecurityException | IOException | SQLException securityException) {
+                                    errorMessage += securityException.getMessage();
+                                }
+
+                                if(!errorMessage.equals("")) {
+                                    JOptionPane.showMessageDialog(parent, errorMessage,
+                                            Main.getString("error_genericTitle"), JOptionPane.ERROR_MESSAGE);
+                                }
                                 setSetsTable();
                             }
                         });
@@ -278,102 +471,201 @@ public class CollectionTableScreen {
             }
         });
 
-        addTableSort(setsTable, new ArrayList<>(List.of(0, 3, 4, 5)));
-        hideTableColumn(setsTable, "ID");
+        setsTable.addSort(new ArrayList<>(List.of(0, 1, 3)), new ArrayList<>(List.of(4, 5)));
+        setsTable.hideColumn(Main.getString("property_set_id"));
     }
 
     private void setCoinsTable() {
-        String[] columnNames = {"ID",
-                "Coin",
-                "Denomination",
-                "Value",
-                "Country",
-                "Grade",
-                "Error",
-                "Note",};
+
+        String[] columnNames = {Main.getString("property_coin_id"),
+                Main.getString("property_coin_toString"),
+                Main.getString("property_coin_denomination"),
+                Main.getString("property_coin_value"),
+                Main.getString("property_coin_country"),
+                Main.getString("property_coin_grade"),
+                Main.getString("property_coin_error"),
+                Main.getString("property_coin_note"),
+                Main.getString("property_coin_container")};
+
+        String[] totalColumns = {Main.getString("property_coin_totals"),
+                Main.getString("property_coin_totals_coins"),
+                Main.getString("property_coin_totals_faceValue"),
+                Main.getString("property_coin_totals_value")};
 
         try {
-            coins = Coin.Companion.getCoinsFromSql(((Main) parent).databaseConnection, "");
+            coins = api.getCoins();
+            if(set != null) {
+                ArrayList<Coin> coinsInSet = new ArrayList<>();
+                for (SetItem item : set.getItems()) {
+                    if (item instanceof Coin)
+                        coinsInSet.add((Coin) item);
+                }
+                coins.removeAll(coinsInSet);
+            }
         }
         catch (Exception ex) {
             coins = new ArrayList<>();
         }
 
+        // For formatting the numbers
+        DecimalFormat format = new DecimalFormat();
+        format.applyPattern("0.00");
+
+        DecimalFormat halfCentFormat = new DecimalFormat();
+        halfCentFormat.applyPattern("0.000");
+
         // Show coins
-        Object[][] data = new Object[coins.size()+1][columnNames.length];
+        Object[][] data = new Object[coins.size()][columnNames.length];
+        Object[][] totalData = new Object[1][totalColumns.length];
+
+        double totalFaceValue = 0.0;
+        double totalValue = 0.0;
+
+        boolean halfCentIncluded = false;
 
         int count = 0;
         // for each coin found
         for (Coin coin : coins) {
 
+            // Format denomination with currency symbol
+            Currency currency = coin.getCurrency();
+
             // For each column
             for(int j = 0; j < columnNames.length; j++) {
                 String columnData = "";
+
+                String string;
+                Double value;
+                String formattedValue;
+
                 switch (j) {
-                    case 0 -> columnData = "" +  coin.getId();
-                    case 1 -> columnData = coin.toString();
-                    case 2 -> {
-                        DecimalFormat format = new DecimalFormat();
-                        format.applyPattern("0.00");
+                    case 0:
+                        columnData = "" +  coin.getId();
+                        break;
+                    // Coin label - Year, Mint Marl, Type
+                    case 1:
+                        columnData = coin.toString();
+                        break;
+                    // Denomination
+                    case 2:
 
-                        String value = format.format(coin.getDenomination());
+                        if(coin.getDenomination() == Coin.HALF_PENNY) {
+                            formattedValue = halfCentFormat.format(coin.getDenomination());
+                            halfCentIncluded = true;
+                        }
+                        else
+                            formattedValue = format.format(coin.getDenomination());
 
-                        columnData = "" + value;
-                    }
-                    case 3 -> {
-                        DecimalFormat format = new DecimalFormat();
-                        format.applyPattern("0.00");
+                        totalFaceValue += coin.getDenomination();
 
-                        String value = format.format(coin.getValue());
+                        if(currency.getSymbolBefore())
+                            string = currency.getSymbol() + formattedValue;
+                        else
+                            string = formattedValue + currency.getSymbol();
 
-                        columnData = "" + value;
-                    }
-                    case 4 -> columnData = coin.getCountry();
-                    case 5 -> columnData = coin.getCondition();
-                    case 6 -> columnData = coin.getErrorType();
-                    case 7 -> columnData = coin.getNote();
+                        columnData = string;
+                        break;
+                    // Value
+                    case 3:
+
+                        if(coin.getValue() == 0.0) {
+                            value = coin.getDenomination();
+
+                            if(coin.getDenomination() == Coin.HALF_PENNY) {
+                                formattedValue = halfCentFormat.format(value);
+                            }
+                            else {
+                                formattedValue = format.format(value);
+                            }
+                        }
+                        else {
+                            value = coin.getValue();
+                            formattedValue = format.format(value);
+                        }
+
+                        totalValue += value;
+
+                        if(currency.getSymbolBefore())
+                            string = currency.getSymbol() + formattedValue;
+                        else
+                            string = formattedValue + currency.getSymbol();
+
+                        columnData = string;
+                        break;
+                    case 4:
+                        columnData = coin.getCountryName();
+                        break;
+                    case 5:
+                        columnData = coin.getCondition();
+                        break;
+                    case 6:
+                        columnData = coin.getErrorType();
+                        break;
+                    case 7:
+                        columnData = coin.getNote();
+                        break;
+                    case 8:
+                        columnData = api.findContainer(coin.getContainerId()).getName();
+                        break;
                 }
                 data[count][j] = columnData;
             }
             count++;
         }
 
-        data[count][1] = "<HTML><B>Coins: " + coins.size() + "</B></HTML>";
+        // If collection includes half cents, add 3rd point of precision
+        String faceValue;
+        if(halfCentIncluded)
+            faceValue = halfCentFormat.format(totalFaceValue);
+        else
+            faceValue = format.format(totalFaceValue);
 
-        double totalFaceValue = 0.0;
-        for(Coin coin : coins) {
-            totalFaceValue += coin.getDenomination();
-        }
-
-        DecimalFormat format = new DecimalFormat();
-        format.applyPattern("0.00");
-
-        String value = format.format(totalFaceValue);
-
-        data[count][2] = "<HTML><B>" + value + "</B></HTML>";
-
-        // Add total current value
-        double totalValue = 0.0;
-        for(Coin coin : coins) {
-            totalValue += coin.getValue();
-        }
-
-        value = format.format(totalValue);
-
-        data[count][3] = "<HTML><B>" + value + "</B></HTML>";
-
-        for(int i = 0; i < columnNames.length; i++)
-            if(data[count][i] == null || data[count][i].equals(""))
-                data[count][i] = " ";
+        totalData[0][0] = "<HTML><B>" + Main.getString("property_coin_totals") + "</B></HTML>";
+        totalData[0][1] = "<HTML><B>" + MessageFormat.format(Main.getString("property_coin_totals_coins"),
+                coins.size()) + "</B></HTML>";
+        totalData[0][2] = "<HTML><B>" + MessageFormat.format(Main.getString("property_coin_totals_faceValue"),
+                faceValue) + "</B></HTML>";
+        totalData[0][3] = "<HTML><B>" + MessageFormat.format(Main.getString("property_coin_totals_value"),
+                format.format(totalValue)) + "</B></HTML>";
 
         // Set data for table
         DefaultTableModel dataModel = new DefaultTableModel();
         dataModel.setDataVector(data, columnNames);
         coinsTable.setModel(dataModel);
 
+        DefaultTableModel totalDataModel = new DefaultTableModel();
+        totalDataModel.setDataVector(totalData, totalColumns);
+        coinsTotalTable.setModel(totalDataModel);
+
         // Make table non-editable, and single selection
         coinsTable.setDefaultEditor(Object.class, null);
         coinsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        coinsTotalTable.setEnabled(false);
+
+        // TODO: Allow showing and hiding of columns - but do so in MyTable
+        /*coinsTable.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(SwingUtilities.isRightMouseButton(e)) {
+                    //int column = coinsTable.columnAtPoint(e.getPoint());
+
+                    // Create right click menu
+                    final JPopupMenu coinHeaderRightClickMenu = new JPopupMenu();
+
+                    // Add select columns item
+                    JMenuItem headings = new JMenuItem("Select Columns");
+                    headings.addActionListener( e1 -> {
+
+                    });
+
+                    coinHeaderRightClickMenu.add(headings);
+
+                    coinHeaderRightClickMenu.show(coinsTable.getTableHeader(), e.getPoint().x, e.getPoint().y);
+                }
+                else
+                    super.mouseClicked(e);
+            }
+        });*/
 
         // Add right click listener
         coinsTable.addMouseListener(new MouseAdapter() {
@@ -403,37 +695,58 @@ public class CollectionTableScreen {
                             return;
                         }
 
+                        if(selectedCoin == null)
+                            return;
+
                         final Coin finalCoin = selectedCoin;
 
                         // Create right click menu
                         final JPopupMenu coinListRightClickMenu = new JPopupMenu();
                         // Add copy item
-                        JMenuItem copy = new JMenuItem("Copy");
+                        JMenuItem copy = new JMenuItem(Main.getString("viewColl_rtClick_copyCoin"));
                         copy.addActionListener( e1 -> {
                             // Show edit coin screen
-                            AddCoinScreen addCoinScreen = new AddCoinScreen(parent);
+                            AddCoinScreen addCoinScreen = new AddCoinScreen(parent, finalCoin.copy());
 
-                            addCoinScreen.setCoin(finalCoin.copy());
                             addCoinScreen.setFromCollection(true);
-                            ((Main) parent).changeScreen(addCoinScreen.getPanel(), "New Coin");
+                            ((Main) parent).changeScreen(addCoinScreen.getPanel(), Main.getString("addCoin_title_add"));
                         });
-                        JMenuItem editCoin = new JMenuItem("Edit");
+                        JMenuItem editCoin = new JMenuItem(Main.getString("viewColl_rtClick_editCoin"));
                         editCoin.addActionListener(e1 -> {
                             // Show edit coin screen
-                            AddCoinScreen addCoinScreen = new AddCoinScreen(parent);
+                            AddCoinScreen addCoinScreen = new AddCoinScreen(parent, finalCoin);
 
-                            addCoinScreen.setCoin(finalCoin);
                             addCoinScreen.setFromCollection(true);
-                            ((Main) parent).changeScreen(addCoinScreen.getPanel(), "Edit Coin");
+                            ((Main) parent).changeScreen(addCoinScreen.getPanel(), Main.getString("addCoin_title_edit"));
                         });
-                        JMenuItem removeCoin = new JMenuItem("Remove from Collection");
+                        JMenuItem removeCoin = new JMenuItem(Main.getString("viewColl_rtClick_removeCoin"));
                         removeCoin.addActionListener(e1 ->{
                             // Show an "Are you sure?" prompt
-                            int option = JOptionPane.showConfirmDialog(parent, "Are you sure you want to remove this coin?", "Delete Coin", JOptionPane.YES_NO_OPTION);
+                            int option = JOptionPane.showConfirmDialog(parent,
+                                    Main.getString("viewColl_dialog_removeCoinMessage"),
+                                    Main.getString("viewColl_dialog_removeCoinTitle"),
+                                    JOptionPane.YES_NO_OPTION);
+                            String errorMessage = "";
 
                             if(option == JOptionPane.YES_OPTION)
                             {
-                                finalCoin.deleteFromDb(((Main)parent).databaseConnection);
+                                try {
+                                    if(finalCoin.removeFromDb(api)) {
+                                        if (!finalCoin.deleteObvImage()) {
+                                            errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), finalCoin.getObvImgPath());
+                                        }
+                                        if (!finalCoin.deleteRevImage()) {
+                                            errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), finalCoin.getRevImgPath());
+                                        }
+                                    }
+                                } catch (SecurityException | IOException | SQLException securityException) {
+                                    errorMessage += securityException.getMessage();
+                                }
+
+                                if(!errorMessage.equals("")) {
+                                    JOptionPane.showMessageDialog(parent, errorMessage,
+                                            Main.getString("error_genericTitle"), JOptionPane.ERROR_MESSAGE);
+                                }
                                 setCoinsTable();
                             }
                         });
@@ -448,107 +761,162 @@ public class CollectionTableScreen {
             }
         });
 
-        addTableSort(coinsTable, new ArrayList<>(List.of(0, 2,3)));
-        hideTableColumn(coinsTable, "ID");
+        coinsTable.addSort(new ArrayList<>(List.of(0)), new ArrayList<>(List.of(2,3)));
+        coinsTable.hideColumn(Main.getString("property_coin_id"));
     }
 
     private void setBillsTable() {
-        String[] columnNames = {"ID",
-                "Bill",
-                "Denomination",
-                "Value",
-                "Country",
-                "Signatures",
-                "Grade",
-                "Error",
-                "Star",
-                "Note",};
+        String[] columnNames = {Main.getString("property_bill_id"),
+                Main.getString("property_bill_toString"),
+                Main.getString("property_bill_denomination"),
+                Main.getString("property_bill_value"),
+                Main.getString("property_bill_country"),
+                Main.getString("property_bill_serial"),
+                Main.getString("property_bill_signatures"),
+                Main.getString("property_bill_grade"),
+                Main.getString("property_bill_error"),
+                Main.getString("property_bill_replacement"),
+                Main.getString("property_bill_note"),
+                Main.getString("property_bill_container")};
+
+        String[] totalColumns = {Main.getString("property_bill_totals"),
+                Main.getString("property_bill_totals_bills"),
+                Main.getString("property_bill_totals_faceValue"),
+                Main.getString("property_bill_totals_value"),
+                Main.getString("property_bill_totals_replacements")};
 
         try {
-            bills = Bill.Companion.getBillsFromSql(((Main) parent).databaseConnection, "");
+            bills = api.getBills();
+            if(set != null) {
+                ArrayList<Bill> billsInSet = new ArrayList<>();
+                for (SetItem item : set.getItems()) {
+                    if (item instanceof Bill)
+                        billsInSet.add((Bill) item);
+                }
+                bills.removeAll(billsInSet);
+            }
         }
         catch (Exception e) {
             bills = new ArrayList<>();
         }
 
+        // For formatting the numbers
+        DecimalFormat format = new DecimalFormat();
+        format.applyPattern("0.00");
+
         // Show bills
-        Object[][] data = new Object[bills.size()+1][columnNames.length];
+        Object[][] data = new Object[bills.size()][columnNames.length];
+        Object[][] totalData = new Object[1][totalColumns.length];
 
         int count = 0;
+
+        double totalFaceValue = 0.0;
+        double totalValue = 0.0;
+        int totalReplacements = 0;
+
         // for each bill found
         for (Bill bill : bills) {
+
+            // Format denomination with currency symbol
+            Currency currency = api.findCurrency(bill.getCurrency().getNameAbbr());
+
+            double value;
 
             // For each column
             for(int j = 0; j < columnNames.length; j++) {
                 String columnData = "";
                 switch (j) {
-                    case 0 -> columnData += bill.getId();
-                    case 1 -> columnData = bill.toString();
-                    case 2 -> {
-                        DecimalFormat format = new DecimalFormat();
-                        format.applyPattern("0.00");
+                    case 0:
+                        columnData += bill.getId();
+                        break;
+                    case 1:
+                        columnData = bill.toString();
+                        break;
+                    case 2:
+                        String valueString = format.format(bill.getDenomination());
+                        totalFaceValue += bill.getDenomination();
 
-                        String value = format.format(bill.getDenomination());
+                        if(currency.getSymbolBefore())
+                            valueString = currency.getSymbol() + valueString;
+                        else
+                            valueString = valueString + currency.getSymbol();
+                        columnData = "" + valueString;
+                        break;
+                    case 3:
+                        String string;
 
-                        columnData = "" + value;
-                    }
-                    case 3 -> {
-                        DecimalFormat format = new DecimalFormat();
-                        format.applyPattern("0.00");
+                        if(bill.getValue() == 0.0)
+                            value = bill.getDenomination();
+                        else
+                            value = bill.getValue();
 
-                        String value = format.format(bill.getValue());
+                        totalValue += value;
 
-                        columnData = "" + value;
-                    }
-                    case 4 -> columnData = bill.getCountry();
-                    case 5 -> columnData = bill.getSignatures();
-                    case 6 -> columnData = bill.getCondition();
-                    case 7 -> columnData = bill.getErrorType();
-                    case 8 -> columnData = "" + bill.getStar();
-                    case 9 -> columnData = bill.getNote();
+                        if(currency.getSymbolBefore())
+                            string = currency.getSymbol() + format.format(value);
+                        else
+                            string = format.format(value) + currency.getSymbol();
+
+                        columnData = "" + string;
+                        break;
+                    case 4:
+                        columnData = bill.getCountryName();
+                        break;
+                    case 5:
+                        columnData = bill.getSerial();
+                        break;
+                    case 6:
+                        columnData = bill.getSignatures();
+                        break;
+                    case 7:
+                        columnData = bill.getCondition();
+                        break;
+                    case 8:
+                        columnData = bill.getErrorType();
+                        break;
+                    case 9:
+
+                        if(bill.getReplacement()) {
+                            totalReplacements++;
+                            columnData = "X";
+                        }
+                        break;
+                    case 10:
+                        columnData = bill.getNote();
+                        break;
+                    case 11:
+                        columnData = api.findContainer(bill.getContainerId()).getName();
+                        break;
                 }
                 data[count][j] = columnData;
             }
             count++;
         }
 
-        data[count][1] = "<HTML><B>Bills: " + bills.size() + "</B></HTML>";
-
-        double totalFaceValue = 0.0;
-        for(Bill bill : bills) {
-            totalFaceValue += bill.getDenomination();
-        }
-
-        DecimalFormat format = new DecimalFormat();
-        format.applyPattern("0.00");
-
-        String value = format.format(totalFaceValue);
-
-        data[count][2] = "<HTML><B>" + value + "</B></HTML>";
-
-        // Add total current value
-        double totalValue = 0.0;
-        for(Bill bill : bills) {
-            totalValue += bill.getValue();
-        }
-
-        value = format.format(totalValue);
-
-        data[count][3] = "<HTML><B>" + value + "</B></HTML>";
-
-        // Put space in all empty columns in totals row
-        for(int i = 0; i < columnNames.length; i++)
-            if(data[count][i] == null || data[count][i].equals(""))
-                data[count][i] = " ";
+        // Show totals
+        totalData[0][0] = "<HTML><B>" + Main.getString("property_bill_totals") + "</B></HTML>";
+        totalData[0][1] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_bills"),
+                bills.size()) + "</B></HTML>";
+        totalData[0][2] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_replacements"),
+                totalReplacements) + "</B></HTML>";
+        totalData[0][3] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_faceValue"),
+                format.format(totalFaceValue)) + "</B></HTML>";
+        totalData[0][4] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_value"),
+                format.format(totalValue)) + "</B></HTML>";
 
         // Set data for table
         DefaultTableModel dataModel = new DefaultTableModel();
         dataModel.setDataVector(data, columnNames);
         billsTable.setModel(dataModel);
 
+        DefaultTableModel totalDataModel = new DefaultTableModel();
+        totalDataModel.setDataVector(totalData, totalColumns);
+        billsTotalTable.setModel(totalDataModel);
+
         // Make table non-editable, and single selection
         billsTable.setDefaultEditor(Object.class, null);
         billsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        billsTotalTable.setEnabled(false);
 
         // Add right click listener
         billsTable.addMouseListener(new MouseAdapter() {
@@ -578,36 +946,58 @@ public class CollectionTableScreen {
                             return;
                         }
 
+                        if(selectedBill == null)
+                            return;
+
                         final Bill finalBill = selectedBill;
 
                         // Create right click menu
                         final JPopupMenu billListRightClickMenu = new JPopupMenu();
-                        JMenuItem copy = new JMenuItem("Copy");
+                        JMenuItem copy = new JMenuItem(Main.getString("viewColl_rtClick_copyBill"));
                         copy.addActionListener(e1 -> {
                             // Show edit bill screen
-                            AddBillScreen addBillScreen = new AddBillScreen(parent);
+                            AddBillScreen addBillScreen = new AddBillScreen(parent, finalBill.copy());
 
-                            addBillScreen.setBill(finalBill.copy());
                             addBillScreen.setFromCollection(true);
-                            ((Main) parent).changeScreen(addBillScreen.getPanel(), "Edit Bill");
+                            ((Main) parent).changeScreen(addBillScreen.getPanel(), Main.getString("addBill_title_add"));
                         });
-                        JMenuItem editBill = new JMenuItem("Edit");
+                        JMenuItem editBill = new JMenuItem(Main.getString("viewColl_rtClick_editBill"));
                         editBill.addActionListener(e1 -> {
                             // Show edit bill screen
-                            AddBillScreen addBillScreen = new AddBillScreen(parent);
+                            AddBillScreen addBillScreen = new AddBillScreen(parent, finalBill);
 
-                            addBillScreen.setBill(finalBill);
                             addBillScreen.setFromCollection(true);
-                            ((Main) parent).changeScreen(addBillScreen.getPanel(), "Edit Bill");
+                            ((Main) parent).changeScreen(addBillScreen.getPanel(), Main.getString("addBill_title_edit"));
                         });
-                        JMenuItem removeBill = new JMenuItem("Remove from Collection");
+                        JMenuItem removeBill = new JMenuItem(Main.getString("viewColl_rtClick_removeBill"));
                         removeBill.addActionListener(e1 ->{
                             // Show an "Are you sure?" prompt
-                            int option = JOptionPane.showConfirmDialog(parent, "Are you sure you want to remove this bill?", "Delete Bill", JOptionPane.YES_NO_OPTION);
+                            int option = JOptionPane.showConfirmDialog(parent,
+                                    Main.getString("viewColl_dialog_removeBillMessage"),
+                                    Main.getString("viewColl_dialog_removeBillTitle"),
+                                    JOptionPane.YES_NO_OPTION);
 
                             if(option == JOptionPane.YES_OPTION)
                             {
-                                finalBill.deleteFromDb(((Main)parent).databaseConnection);
+                                String errorMessage = "";
+                                try {
+                                    if(finalBill.removeFromDb(api)) {
+                                        if (!finalBill.deleteObvImage()) {
+                                            errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), finalBill.getObvImgPath());
+                                        }
+                                        if (!finalBill.deleteRevImage()) {
+                                            errorMessage += MessageFormat.format(Main.getString("error_deletingFile_message"), finalBill.getRevImgPath());
+                                        }
+                                    }
+                                } catch (SecurityException | IOException | SQLException securityException) {
+                                    errorMessage += securityException.getMessage();
+                                }
+
+                                if(!errorMessage.equals("")) {
+                                    JOptionPane.showMessageDialog(parent, errorMessage,
+                                            Main.getString("error_genericTitle"), JOptionPane.ERROR_MESSAGE);
+                                }
+
                                 setBillsTable();
                             }
                         });
@@ -622,8 +1012,8 @@ public class CollectionTableScreen {
             }
         });
 
-        addTableSort(billsTable, new ArrayList<>(List.of(0, 2, 3)));
-        hideTableColumn(billsTable, "ID");
+        billsTable.addSort(new ArrayList<>(List.of(0)), new ArrayList<>(List.of(2,3)));
+        billsTable.hideColumn(Main.getString("property_bill_id"));
     }
 
     private void goHome() {
@@ -632,90 +1022,103 @@ public class CollectionTableScreen {
 
     private void export(String path) {
 
-        try{
-            TableModel model;
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
 
-            switch (tabbedPane.getSelectedIndex()) {
-                case 0 -> model = coinsTable.getModel();
-                case 1 -> model = setsTable.getModel();
-                default -> model = billsTable.getModel();
-            }
+            String error = "";
 
-            File file = new File(path);
-            file.createNewFile(); // if file already exists will do nothing
+            @Override
+            protected Void doInBackground(){
+                try{
+                    TableModel model;
+                    JTable table;
 
-            FileWriter excel = new FileWriter(file);
+                    switch (tabbedPane.getSelectedIndex()) {
+                        case 0: table = coinsTable;
+                            break;
+                        case 1: table = setsTable;
+                            break;
+                        default: table = billsTable;
+                            break;
+                    }
 
-            for (int i = 0; i < model.getColumnCount(); i++) {
-                excel.write(model.getColumnName(i) + "\t");
-            }
+                    model = table.getModel();
 
-            excel.write("\n");
+                    File file = new File(path);
 
-            // Don't include the totals row
-            for (int i = 0; i < model.getRowCount() -1; i++) {
-                for (int j = 0; j < model.getColumnCount(); j++) {
-                    if(model.getValueAt(i, j) != null)
-                        excel.write(model.getValueAt(i, j).toString() + "\t");
-                    else
-                        excel.write("\t");
+                    // If file already exists
+                    if(!file.createNewFile()) {
+                        int result = JOptionPane.showConfirmDialog(parent,
+                                Main.getString("warning_file_exists_message"),
+                                path,JOptionPane.YES_NO_OPTION);
+                        if(result == JOptionPane.NO_OPTION) {
+                            error = Main.getString("warning_file_write_cancelled");
+                            return null;
+                        }
+                    }
+
+                    FileWriter csv = new FileWriter(file);
+
+                    // Output column names
+                    for (int i = 0; i < model.getColumnCount(); i++) {
+                        // Don't output hidden columns
+                        if(table.getColumn(table.getColumnName(i)).getWidth() != 0) {
+                            // Using getModelIndex in case columns were moved
+                            csv.write(model.getColumnName(table.getColumn(table.getColumnName(i)).getModelIndex()) + ",");
+                        }
+                    }
+
+                    csv.write("\n");
+
+                    // Output data 1 row at a time
+                    for (int i = 0; i < model.getRowCount(); i++) {
+                        for (int j = 0; j < model.getColumnCount(); j++) {
+                            // Don't output hidden columns
+                            if(table.getColumn(table.getColumnName(j)).getWidth() != 0) {
+                                if (model.getValueAt(i, j) != null)
+                                    // Using getModelIndex in case columns were moved
+                                    csv.write(model.getValueAt(i, table.getColumn(table.getColumnName(j)).getModelIndex()) + ",");
+                                else
+                                    csv.write(",");
+                            }
+                        }
+                        csv.write("\n");
+                    }
+
+                    csv.close();
+
+                } catch(IOException e){
+                    error = e.getMessage();
                 }
-                excel.write("\n");
+                return null;
             }
 
-            excel.close();
+            @Override
+            protected void done() {
+                if(!error.equals("")) {
+                    JOptionPane.showMessageDialog(parent, error, Main.getString("error_fileSave"), JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
 
-        } catch(IOException e){
-            e.printStackTrace();
-        }
+        Main.showBackgroundPopup(parent,
+                Main.getString("export_file_saving_message"),
+                Main.getString("export_file_saving_title"), worker);
     }
 
     public void setTab(int index) {
         tabbedPane.setSelectedIndex(index);
     }
 
-    private void hideTableColumn(JTable table, String columnName) {
-        table.getColumn(columnName).setMinWidth(0); // Must be set before maxWidth!!
-        table.getColumn(columnName).setMaxWidth(0);
-        table.getColumn(columnName).setWidth(0);
+    public void setSet(Set set) {
+        this.set = set;
+
+        // Remove this set, and any items in the set, from the list
+        setCoinsTable();
+        setBillsTable();
+        setSetsTable();
     }
 
-    private void addTableSort(JTable table, ArrayList<Integer> numberColumns) {
-
-        TableRowSorter sorter = new TableRowSorter();
-        table.setRowSorter(sorter);
-        sorter.setModel(table.getModel());
-
-        ArrayList<Integer> textColumns = new ArrayList<>();
-        textColumns.add(1);
-        // Add all non-number rows to the list of text rows
-        for(int i = 0; i < table.getColumnCount(); i++)
-            if(!numberColumns.contains(i))
-                textColumns.add(i);
-
-        // Number based columns
-        for(int num : numberColumns) {
-            sorter.setComparator(num, (Comparator<String>) (name1, name2) -> {
-                try {
-                    double one = Double.parseDouble(name1);
-                    double two = Double.parseDouble(name2);
-
-                    return Double.compare(one, two);
-                } catch (NumberFormatException e) {
-                    return 0;
-                }
-            });
-        }
-
-        // Text based columns
-        for (int num : textColumns) {
-            sorter.setComparator(num, (Comparator<String>) (name1, name2) -> {
-                if (name1.equals(" ") || name2.equals(" ") ||
-                        name1.startsWith("<HTML>") || name2.startsWith("<HTML>"))
-                    return 0;
-                else
-                    return name1.compareTo(name2);
-            });
-        }
+    public Set getSet() {
+        return set;
     }
 }
