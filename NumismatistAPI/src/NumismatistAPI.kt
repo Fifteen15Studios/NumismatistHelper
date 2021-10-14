@@ -6,13 +6,11 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.*
 import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.*
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.collections.ArrayList
 
 @Suppress("unused")
 class NumismatistAPI {
@@ -143,7 +141,7 @@ class NumismatistAPI {
                     val classLoader = javaClass.classLoader
 
                     // String returned is URL, so it's HTML encoded. Must decode first
-                    val decodedPath = URLDecoder.decode(classLoader.getResource(newPath)?.file, StandardCharsets.UTF_8)
+                    val decodedPath = URLDecoder.decode(classLoader.getResource(newPath)?.file, "UTF-8")
                     val file = File(decodedPath)
                     resPath = file.absolutePath
                 } catch (e: NullPointerException) {
@@ -477,20 +475,20 @@ class NumismatistAPI {
                     newCoin.countryName = results.getString("CountryName")
                     // Can't get full currency here because it will start a new query
                     newCoin.currency.nameAbbr = results.getString("CurrencyAbbr")
-                    newCoin.name = Objects.requireNonNullElse(results.getString("Type"), "")
+                    newCoin.name = requireNonNullElse(results.getString("Type"), "")
                     newCoin.year = results.getInt("Yr")
                     newCoin.denomination = results.getDouble("Denomination")
                     newCoin.value = results.getDouble("CurValue")
-                    newCoin.mintMark = Objects.requireNonNullElse(results.getString("MintMark"), "")
+                    newCoin.mintMark = requireNonNullElse(results.getString("MintMark"), "")
                     newCoin.graded = results.getBoolean("Graded")
-                    newCoin.condition = Objects.requireNonNullElse(results.getString("Grade"), "")
+                    newCoin.condition = requireNonNullElse(results.getString("Grade"), "")
                     newCoin.error = results.getBoolean("Error")
-                    newCoin.errorType = Objects.requireNonNullElse(results.getString("ErrorType"), "")
-                    newCoin.note = Objects.requireNonNullElse(results.getString("Note"), "")
-                    val setId =  Objects.requireNonNullElse(results.getInt("SetID"), DatabaseItem.ID_INVALID)
+                    newCoin.errorType = requireNonNullElse(results.getString("ErrorType"), "")
+                    newCoin.note = requireNonNullElse(results.getString("Note"), "")
+                    val setId =  requireNonNullElse(results.getInt("SetID"), DatabaseItem.ID_INVALID)
                     newCoin.addSetId(setId)
-                    newCoin.slotId = Objects.requireNonNullElse(results.getInt("SlotID"), DatabaseItem.ID_INVALID)
-                    newCoin.containerId = Objects.requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
+                    newCoin.slotId = requireNonNullElse(results.getInt("SlotID"), DatabaseItem.ID_INVALID)
+                    newCoin.containerId = requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
 
                     if(results.getString("ObvImgExt") != null && results.getString("ObvImgExt") !="")
                         newCoin.obvImgPath = newCoin.generateImagePath(true, results.getString("ObvImgExt"))
@@ -585,7 +583,7 @@ class NumismatistAPI {
                     newBill.id = results.getInt("ID")
                     newBill.countryName = results.getString("CountryName")
                     newBill.currency.nameAbbr = results.getString("CurrencyAbbr")
-                    newBill.name = Objects.requireNonNullElse(results.getString("Type"), "")
+                    newBill.name = requireNonNullElse(results.getString("Type"), "")
                     newBill.year = results.getInt("Yr")
                     newBill.seriesLetter = results.getString("SeriesLetter")
                     newBill.denomination = results.getDouble("Denomination")
@@ -593,14 +591,14 @@ class NumismatistAPI {
                     newBill.graded = results.getBoolean("Graded")
                     newBill.serial = results.getString("Serial")
                     newBill.signatures = results.getString("Signatures")
-                    newBill.condition = Objects.requireNonNullElse(results.getString("Grade"), "")
+                    newBill.condition = requireNonNullElse(results.getString("Grade"), "")
                     newBill.error = results.getBoolean("Error")
-                    newBill.errorType = Objects.requireNonNullElse(results.getString("ErrorType"), "")
+                    newBill.errorType = requireNonNullElse(results.getString("ErrorType"), "")
                     newBill.replacement = results.getBoolean("Replacement")
-                    val setId = Objects.requireNonNullElse(results.getInt("SetID"), DatabaseItem.ID_INVALID)
+                    val setId = requireNonNullElse(results.getInt("SetID"), DatabaseItem.ID_INVALID)
                     newBill.addSetId(setId)
-                    newBill.note = Objects.requireNonNullElse(results.getString("Note"), "")
-                    newBill.containerId = Objects.requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
+                    newBill.note = requireNonNullElse(results.getString("Note"), "")
+                    newBill.containerId = requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
 
                     if(results.getString("ObvImgExt") != null)
                         newBill.obvImgPath = newBill.generateImagePath(true, results.getString("ObvImgExt"))
@@ -670,13 +668,13 @@ class NumismatistAPI {
 
                     val newSet = Set()
                     newSet.id = results.getInt("ID")
-                    newSet.name = Objects.requireNonNullElse(results.getString("Name"), "")
+                    newSet.name = requireNonNullElse(results.getString("Name"), "")
                     newSet.year = results.getInt("Yr")
                     newSet.value = results.getDouble("CurValue")
-                    newSet.note = Objects.requireNonNullElse(results.getString("Note"), "")
-                    val parentId = Objects.requireNonNullElse(results.getInt("ParentID"), DatabaseItem.ID_INVALID)
+                    newSet.note = requireNonNullElse(results.getString("Note"), "")
+                    val parentId = requireNonNullElse(results.getInt("ParentID"), DatabaseItem.ID_INVALID)
                     newSet.addSetId(parentId)
-                    newSet.containerId = Objects.requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
+                    newSet.containerId = requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
 
                     if(parentId != DatabaseItem.ID_INVALID)
                         setsInSets.add(newSet)
@@ -795,7 +793,7 @@ class NumismatistAPI {
                 for (i in 0 until size) {
                     results.next()
 
-                    val name = Objects.requireNonNullElse(results.getString("Name"), "")
+                    val name = requireNonNullElse(results.getString("Name"), "")
                     val id = results.getInt("ID")
                     val newCountry = Country(name, id, ArrayList())
 
@@ -857,9 +855,9 @@ class NumismatistAPI {
                     val container = Container()
 
                     container.id = results.getInt("ID")
-                    container.name = Objects.requireNonNullElse(results.getString("Name"), "")
+                    container.name = requireNonNullElse(results.getString("Name"), "")
                     container.parentID =
-                        Objects.requireNonNullElse(results.getInt("ParentID"), DatabaseItem.ID_INVALID)
+                        requireNonNullElse(results.getInt("ParentID"), DatabaseItem.ID_INVALID)
 
                     containers.add(container)
                 }
@@ -960,9 +958,9 @@ class NumismatistAPI {
                     results.next()
 
                     val id = results.getInt("ID")
-                    val name = Objects.requireNonNullElse(results.getString("Name"), "")
-                    val abbreviation = Objects.requireNonNullElse(results.getString("Abbreviation"), "")
-                    val symbol = Objects.requireNonNullElse(results.getString("Symbol"), "")
+                    val name = requireNonNullElse(results.getString("Name"), "")
+                    val abbreviation = requireNonNullElse(results.getString("Abbreviation"), "")
+                    val symbol = requireNonNullElse(results.getString("Symbol"), "")
                     val symbolBefore = results.getBoolean("SymbolBefore")
                     val start = results.getInt("YrStart")
                     val end : Int = results.getInt("YrEnd") // Will be 0 if null
@@ -1011,9 +1009,9 @@ class NumismatistAPI {
                     results.next()
 
                     val id = results.getInt("ID")
-                    val name = Objects.requireNonNullElse(results.getString("Name"), "")
-                    val abbreviation = Objects.requireNonNullElse(results.getString("Abbreviation"), "")
-                    val symbol = Objects.requireNonNullElse(results.getString("Symbol"), "")
+                    val name = requireNonNullElse(results.getString("Name"), "")
+                    val abbreviation = requireNonNullElse(results.getString("Abbreviation"), "")
+                    val symbol = requireNonNullElse(results.getString("Symbol"), "")
                     val symbolBefore = results.getBoolean("SymbolBefore")
                     val start = results.getInt("YrStart")
                     val end : Int = results.getInt("YrEnd") // Will be 0 if null
@@ -1084,10 +1082,10 @@ class NumismatistAPI {
 
                 val id = results.getInt("ID")
                 val title = results.getString("Title")
-                val denomination = Objects.requireNonNullElse(results.getDouble("Denomination"), 0.0)
-                val startYear = Objects.requireNonNullElse(results.getInt("StartYear"), 0)
-                val endYear = Objects.requireNonNullElse(results.getInt("EndYear"), 9999)
-                val containerId = Objects.requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
+                val denomination = requireNonNullElse(results.getDouble("Denomination"), 0.0)
+                val startYear = requireNonNullElse(results.getInt("StartYear"), 0)
+                val endYear = requireNonNullElse(results.getInt("EndYear"), 9999)
+                val containerId = requireNonNullElse(results.getInt("ContainerID"), DatabaseItem.ID_INVALID)
 
                 val book = Book()
                 book.id = id
@@ -1217,10 +1215,10 @@ class NumismatistAPI {
                 val id = results.getInt("ID")
                 val rowNum = results.getInt("RowNum")
                 val colNum = results.getInt("ColNum")
-                val denomination = Objects.requireNonNullElse(results.getDouble("Denomination"), 0.10)
-                val label = Objects.requireNonNullElse(results.getString("Label"), "")
-                val label2 = Objects.requireNonNullElse(results.getString("Label2"), "")
-                val label3 = Objects.requireNonNullElse(results.getString("Label3"), "")
+                val denomination = requireNonNullElse(results.getDouble("Denomination"), 0.10)
+                val label = requireNonNullElse(results.getString("Label"), "")
+                val label2 = requireNonNullElse(results.getString("Label2"), "")
+                val label3 = requireNonNullElse(results.getString("Label3"), "")
 
                 val slot = PageSlot()
                 slot.id = id
@@ -1502,5 +1500,47 @@ class NumismatistAPI {
 
     fun getGeneratedKeys() : ResultSet {
         return connection.statement!!.generatedKeys
+    }
+
+    /**
+     * Returns the first argument if it is non-`null` and
+     * otherwise returns the non-`null` second argument.
+     *
+     * @param obj an object
+     * @param defaultObj a non-`null` object to return if the first argument
+     * is `null`
+     * @param <T> the type of the reference
+     * @return the first argument if it is non-`null` and
+     * otherwise the second argument if it is non-`null`
+     * @throws NullPointerException if both `obj` is null and
+     * `defaultObj` is `null`
+     * @since 9
+    </T> */
+    fun <T> requireNonNullElse(obj: T?, defaultObj: T): T {
+        return obj ?: Objects.requireNonNull(defaultObj, "defaultObj")
+    }
+
+
+    /**
+     * Checks that the specified object reference is not `null` and
+     * throws a customized [NullPointerException] if it is. This method
+     * is designed primarily for doing parameter validation in methods and
+     * constructors with multiple parameters, as demonstrated below:
+     * <blockquote><pre>
+     * public Foo(Bar bar, Baz baz) {
+     * this.bar = Objects.requireNonNull(bar, "bar must not be null");
+     * this.baz = Objects.requireNonNull(baz, "baz must not be null");
+     * }
+    </pre></blockquote> *
+     *
+     * @param obj     the object reference to check for nullity
+     * @param message detail message to be used in the event that a `NullPointerException` is thrown
+     * @param <T> the type of the reference
+     * @return `obj` if not `null`
+     * @throws NullPointerException if `obj` is `null`
+    </T> */
+    fun <T> requireNonNull(obj: T?, message: String?): T {
+        if (obj == null) throw java.lang.NullPointerException(message)
+        return obj
     }
 }
