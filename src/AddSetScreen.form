@@ -14,7 +14,7 @@
         </constraints>
         <properties>
           <labelFor value="ee322"/>
-          <text resource-bundle="res/strings" key="addSet_label_value"/>
+          <text resource-bundle="strings" key="addSet_label_value"/>
         </properties>
       </component>
       <component id="ee322" class="javax.swing.JTextField" binding="valueInput">
@@ -37,7 +37,7 @@
           <component id="fec39" class="javax.swing.JList" binding="coinList">
             <constraints/>
             <properties>
-              <toolTipText resource-bundle="res/strings" key="addSet_tip_inSet"/>
+              <toolTipText resource-bundle="strings" key="addSet_tip_inSet"/>
             </properties>
           </component>
         </children>
@@ -48,7 +48,7 @@
         </constraints>
         <properties>
           <labelFor value=""/>
-          <text resource-bundle="res/strings" key="addSet_label_inSet"/>
+          <text resource-bundle="strings" key="addSet_label_inSet"/>
         </properties>
       </component>
       <component id="7e527" class="javax.swing.JLabel">
@@ -58,7 +58,7 @@
           </grid>
         </constraints>
         <properties>
-          <text resource-bundle="res/strings" key="addSet_label_faceValue"/>
+          <text resource-bundle="strings" key="addSet_label_faceValue"/>
         </properties>
       </component>
       <component id="4dfe" class="javax.swing.JLabel" binding="faceValueDisplay">
@@ -77,7 +77,7 @@
         </constraints>
         <properties>
           <labelFor value="e2ca4"/>
-          <text resource-bundle="res/strings" key="addSet_label_note"/>
+          <text resource-bundle="strings" key="addSet_label_note"/>
         </properties>
       </component>
       <scrollpane id="a7d16">
@@ -115,7 +115,7 @@
                 </constraints>
                 <properties>
                   <labelFor value="722fe"/>
-                  <text resource-bundle="res/strings" key="addSet_label_obvImage"/>
+                  <text resource-bundle="strings" key="addSet_label_obvImage"/>
                 </properties>
               </component>
               <component id="722fe" class="javax.swing.JTextField" binding="imageObvLocationInput">
@@ -133,7 +133,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addSet_button_browseObv"/>
+                  <text resource-bundle="strings" key="addSet_button_browseObv"/>
                 </properties>
               </component>
               <component id="fbd74" class="javax.swing.JButton" binding="obvSetButton">
@@ -141,7 +141,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addSet_button_setObv"/>
+                  <text resource-bundle="strings" key="addSet_button_setObv"/>
                   <toolTipText value="Sets the image path after you have types in a value"/>
                 </properties>
               </component>
@@ -150,7 +150,7 @@
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addSet_button_remObv"/>
+                  <text resource-bundle="strings" key="addSet_button_remObv"/>
                   <toolTipText value="Remove image from this set"/>
                 </properties>
               </component>
@@ -170,7 +170,7 @@
                 </constraints>
                 <properties>
                   <labelFor value="cfc48"/>
-                  <text resource-bundle="res/strings" key="addSet_label_revImage"/>
+                  <text resource-bundle="strings" key="addSet_label_revImage"/>
                 </properties>
               </component>
               <component id="cfc48" class="javax.swing.JTextField" binding="imageRevLocationInput">
@@ -188,7 +188,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addSet_button_browseRev"/>
+                  <text resource-bundle="strings" key="addSet_button_browseRev"/>
                 </properties>
               </component>
               <component id="13bf2" class="javax.swing.JButton" binding="revRemoveButton">
@@ -196,7 +196,7 @@
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addSet_button_remRev"/>
+                  <text resource-bundle="strings" key="addSet_button_remRev"/>
                   <toolTipText value="Remove image from this set"/>
                 </properties>
               </component>
@@ -205,7 +205,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addSet_button_setRev"/>
+                  <text resource-bundle="strings" key="addSet_button_setRev"/>
                   <toolTipText value="Sets the image path after you have types in a value"/>
                 </properties>
               </component>
@@ -254,7 +254,7 @@
             </constraints>
             <properties>
               <labelFor value="aaea8"/>
-              <text resource-bundle="res/strings" key="addSet_label_name"/>
+              <text resource-bundle="strings" key="addSet_label_name"/>
             </properties>
           </component>
           <component id="7f74c" class="javax.swing.JButton" binding="setCoinsButton" default-binding="true">
@@ -262,7 +262,7 @@
               <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addSet_button_setYears"/>
+              <text resource-bundle="strings" key="addSet_button_setYears"/>
               <toolTipText value="Sets this year on all coins in the set"/>
             </properties>
           </component>
@@ -280,7 +280,7 @@
             </constraints>
             <properties>
               <labelFor value="658e9"/>
-              <text resource-bundle="res/strings" key="addSet_label_year"/>
+              <text resource-bundle="strings" key="addSet_label_year"/>
             </properties>
           </component>
           <component id="aaea8" class="javax.swing.JTextField" binding="nameInput">
@@ -296,8 +296,8 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addSet_button_addNew"/>
-              <toolTipText resource-bundle="res/strings" key="addSet_tip_button_addNew"/>
+              <text resource-bundle="strings" key="addSet_button_addNew"/>
+              <toolTipText resource-bundle="strings" key="addSet_tip_button_addNew"/>
             </properties>
           </component>
           <component id="8f26f" class="javax.swing.JButton" binding="addExistingButton" default-binding="true">
@@ -307,8 +307,8 @@
               </grid>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addSet_button_addExisting"/>
-              <toolTipText resource-bundle="res/strings" key="addSet_tip_button_existingItem"/>
+              <text resource-bundle="strings" key="addSet_button_addExisting"/>
+              <toolTipText resource-bundle="strings" key="addSet_tip_button_existingItem"/>
             </properties>
           </component>
         </children>
@@ -358,7 +358,7 @@
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addSet_button_saveCopy"/>
+              <text resource-bundle="strings" key="addSet_button_saveCopy"/>
             </properties>
           </component>
           <component id="f36ca" class="javax.swing.JButton" binding="OKButton">
@@ -366,7 +366,7 @@
               <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="ok"/>
+              <text resource-bundle="strings" key="ok"/>
             </properties>
           </component>
           <component id="9bf42" class="javax.swing.JButton" binding="cancelButton">
@@ -374,7 +374,7 @@
               <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="cancel"/>
+              <text resource-bundle="strings" key="cancel"/>
             </properties>
           </component>
           <component id="6da96" class="javax.swing.JButton" binding="saveNewButton">
@@ -382,7 +382,7 @@
               <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addSet_button_saveNew"/>
+              <text resource-bundle="strings" key="addSet_button_saveNew"/>
             </properties>
           </component>
         </children>
@@ -401,7 +401,7 @@
         </constraints>
         <properties>
           <labelFor value="b93e1"/>
-          <text resource-bundle="res/strings" key="addSet_label_container"/>
+          <text resource-bundle="strings" key="addSet_label_container"/>
         </properties>
       </component>
       <component id="75d82" class="javax.swing.JButton" binding="addContainerButton">

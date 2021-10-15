@@ -45,7 +45,7 @@
                 </constraints>
                 <properties>
                   <labelFor value="a2577"/>
-                  <text resource-bundle="res/strings" key="addBill_label_obvImage"/>
+                  <text resource-bundle="strings" key="addBill_label_obvImage"/>
                 </properties>
               </component>
               <component id="a2577" class="javax.swing.JTextField" binding="imageObvLocationInput">
@@ -63,7 +63,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addBill_button_obvBrowse"/>
+                  <text resource-bundle="strings" key="addBill_button_obvBrowse"/>
                 </properties>
               </component>
               <component id="76fd0" class="javax.swing.JButton" binding="obvSetButton">
@@ -71,7 +71,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addBill_button_obvSet"/>
+                  <text resource-bundle="strings" key="addBill_button_obvSet"/>
                 </properties>
               </component>
               <component id="fc36e" class="javax.swing.JButton" binding="obvRemoveButton">
@@ -79,7 +79,7 @@
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addBill_button_obvRemove"/>
+                  <text resource-bundle="strings" key="addBill_button_obvRemove"/>
                 </properties>
               </component>
             </children>
@@ -98,7 +98,7 @@
                 </constraints>
                 <properties>
                   <labelFor value="848d"/>
-                  <text resource-bundle="res/strings" key="addBill_label_revImage"/>
+                  <text resource-bundle="strings" key="addBill_label_revImage"/>
                 </properties>
               </component>
               <component id="848d" class="javax.swing.JTextField" binding="imageRevLocationInput">
@@ -114,7 +114,7 @@
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addBill_button_revRemove"/>
+                  <text resource-bundle="strings" key="addBill_button_revRemove"/>
                 </properties>
               </component>
               <component id="81ef5" class="javax.swing.JButton" binding="revSetButton">
@@ -122,7 +122,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addBill_button_revSet"/>
+                  <text resource-bundle="strings" key="addBill_button_revSet"/>
                 </properties>
               </component>
               <component id="a2181" class="javax.swing.JButton" binding="revBrowseButton">
@@ -132,7 +132,7 @@
                   </grid>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="addBill_button_revBrowse"/>
+                  <text resource-bundle="strings" key="addBill_button_revBrowse"/>
                 </properties>
               </component>
             </children>
@@ -177,7 +177,7 @@
               <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addBill_button_saveNew"/>
+              <text resource-bundle="strings" key="addBill_button_saveNew"/>
             </properties>
           </component>
           <vspacer id="bf7cf">
@@ -215,7 +215,7 @@
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addBill_button_saveCopy"/>
+              <text resource-bundle="strings" key="addBill_button_saveCopy"/>
             </properties>
           </component>
           <component id="c7b01" class="javax.swing.JButton" binding="cancelButton">
@@ -223,7 +223,7 @@
               <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="cancel"/>
+              <text resource-bundle="strings" key="cancel"/>
             </properties>
           </component>
           <component id="ec5ca" class="javax.swing.JButton" binding="OKButton" default-binding="true">
@@ -231,7 +231,7 @@
               <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="1" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="ok"/>
+              <text resource-bundle="strings" key="ok"/>
             </properties>
           </component>
         </children>
@@ -242,7 +242,7 @@
         </constraints>
         <properties>
           <labelFor value="cfe64"/>
-          <text resource-bundle="res/strings" key="addBill_label_country"/>
+          <text resource-bundle="strings" key="addBill_label_country"/>
         </properties>
       </component>
       <component id="14f84" class="javax.swing.JLabel">
@@ -251,7 +251,7 @@
         </constraints>
         <properties>
           <labelFor value="c9a25"/>
-          <text resource-bundle="res/strings" key="addBill_label_series"/>
+          <text resource-bundle="strings" key="addBill_label_series"/>
         </properties>
       </component>
       <component id="c9a25" class="javax.swing.JTextField" binding="yearInput">
@@ -282,7 +282,7 @@
         </constraints>
         <properties>
           <labelFor value="257d9"/>
-          <text resource-bundle="res/strings" key="addBill_label_serial"/>
+          <text resource-bundle="strings" key="addBill_label_serial"/>
         </properties>
       </component>
       <component id="257d9" class="javax.swing.JTextField" binding="serialNumberInput">
@@ -299,7 +299,7 @@
         </constraints>
         <properties>
           <labelFor value="2dcf"/>
-          <text resource-bundle="res/strings" key="addBill_label_currency"/>
+          <text resource-bundle="strings" key="addBill_label_currency"/>
         </properties>
       </component>
       <component id="2dcf" class="AutoComboBox" binding="currencyInput">
@@ -316,7 +316,7 @@
         </constraints>
         <properties>
           <labelFor value="61c8"/>
-          <text resource-bundle="res/strings" key="addBill_label_denomination"/>
+          <text resource-bundle="strings" key="addBill_label_denomination"/>
         </properties>
       </component>
       <component id="61c8" class="javax.swing.JTextField" binding="denominationInput">
@@ -333,7 +333,7 @@
         </constraints>
         <properties>
           <labelFor value="cee9c"/>
-          <text resource-bundle="res/strings" key="addBill_label_value"/>
+          <text resource-bundle="strings" key="addBill_label_value"/>
         </properties>
       </component>
       <component id="cee9c" class="javax.swing.JTextField" binding="valueInput">
@@ -350,7 +350,7 @@
         </constraints>
         <properties>
           <labelFor value="632c9"/>
-          <text resource-bundle="res/strings" key="addBill_label_type"/>
+          <text resource-bundle="strings" key="addBill_label_type"/>
         </properties>
       </component>
       <component id="632c9" class="javax.swing.JTextField" binding="typeInput">
@@ -374,7 +374,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addBill_checkbox_graded"/>
+              <text resource-bundle="strings" key="addBill_checkbox_graded"/>
             </properties>
           </component>
           <component id="4c1c0" class="javax.swing.JLabel">
@@ -383,7 +383,7 @@
             </constraints>
             <properties>
               <labelFor value="3cf92"/>
-              <text resource-bundle="res/strings" key="addBill_label_grade"/>
+              <text resource-bundle="strings" key="addBill_label_grade"/>
             </properties>
           </component>
           <component id="3cf92" class="AutoComboBox" binding="gradeComboBox">
@@ -409,7 +409,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="addBill_checkbox_error"/>
+              <text resource-bundle="strings" key="addBill_checkbox_error"/>
             </properties>
           </component>
           <component id="34e" class="javax.swing.JLabel">
@@ -418,7 +418,7 @@
             </constraints>
             <properties>
               <labelFor value="4f965"/>
-              <text resource-bundle="res/strings" key="addBill_label_errorType"/>
+              <text resource-bundle="strings" key="addBill_label_errorType"/>
             </properties>
           </component>
           <component id="4f965" class="javax.swing.JTextField" binding="errorTypeInput">
@@ -439,7 +439,7 @@
         </constraints>
         <properties>
           <labelFor value="b408"/>
-          <text resource-bundle="res/strings" key="addBill_label_note"/>
+          <text resource-bundle="strings" key="addBill_label_note"/>
         </properties>
       </component>
       <component id="46aad" class="javax.swing.JTextField" binding="signaturesInput">
@@ -458,7 +458,7 @@
         </constraints>
         <properties>
           <labelFor value="46aad"/>
-          <text resource-bundle="res/strings" key="addBill_label_signatures"/>
+          <text resource-bundle="strings" key="addBill_label_signatures"/>
         </properties>
       </component>
       <component id="754c0" class="javax.swing.JCheckBox" binding="starCheck">
@@ -466,7 +466,7 @@
           <grid row="1" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text resource-bundle="res/strings" key="addBill_checkbox_replacement"/>
+          <text resource-bundle="strings" key="addBill_checkbox_replacement"/>
         </properties>
       </component>
       <component id="74746" class="javax.swing.JComboBox" binding="locationDropDown">
@@ -481,7 +481,7 @@
         </constraints>
         <properties>
           <labelFor value="74746"/>
-          <text resource-bundle="res/strings" key="addBill_label_container"/>
+          <text resource-bundle="strings" key="addBill_label_container"/>
         </properties>
       </component>
       <component id="fd586" class="javax.swing.JButton" binding="addContainerButton">

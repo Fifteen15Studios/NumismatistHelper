@@ -34,7 +34,7 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="ok"/>
+                  <text resource-bundle="strings" key="ok"/>
                 </properties>
               </component>
               <component id="5723f" class="javax.swing.JButton" binding="buttonCancel">
@@ -42,7 +42,7 @@
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="cancel"/>
+                  <text resource-bundle="strings" key="cancel"/>
                 </properties>
               </component>
             </children>
@@ -62,7 +62,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="newPage_label_row"/>
+              <text resource-bundle="strings" key="newPage_label_row"/>
             </properties>
           </component>
           <vspacer id="52f6e">
@@ -75,7 +75,7 @@
               <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="newPage_label_coinsPerRow2"/>
+              <text resource-bundle="strings" key="newPage_label_coinsPerRow2"/>
             </properties>
           </component>
           <component id="dc3f7" class="javax.swing.JLabel">
@@ -83,7 +83,7 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="newPage_label_coinsPerRow"/>
+              <text resource-bundle="strings" key="newPage_label_coinsPerRow"/>
             </properties>
           </component>
           <component id="bc759" class="javax.swing.JComboBox" binding="sizeDropDown">
@@ -97,7 +97,7 @@
               <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="newPage_label_coinSize"/>
+              <text resource-bundle="strings" key="newPage_label_coinSize"/>
             </properties>
           </component>
           <component id="95ef1" class="javax.swing.JSpinner" binding="rowsSpinner">
@@ -130,7 +130,7 @@
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="newPage_checkbox_custom"/>
+              <text resource-bundle="strings" key="newPage_checkbox_custom"/>
             </properties>
           </component>
           <component id="e7594" class="javax.swing.JCheckBox" binding="alternatingCheckbox">
@@ -138,7 +138,7 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="newPage_checkbox_alternate"/>
+              <text resource-bundle="strings" key="newPage_checkbox_alternate"/>
             </properties>
           </component>
         </children>

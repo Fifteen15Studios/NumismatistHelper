@@ -23,7 +23,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_label_serverName"/>
+              <text resource-bundle="strings" key="itemLoc_label_serverName"/>
             </properties>
           </component>
           <component id="6c2e6" class="javax.swing.JTextField" binding="databaseServerInput">
@@ -39,7 +39,7 @@
               <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_label_imgLoc"/>
+              <text resource-bundle="strings" key="itemLoc_label_imgLoc"/>
             </properties>
           </component>
           <component id="32100" class="javax.swing.JTextField" binding="imagesInput">
@@ -55,7 +55,7 @@
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_label_dbName"/>
+              <text resource-bundle="strings" key="itemLoc_label_dbName"/>
             </properties>
           </component>
           <component id="a92c7" class="javax.swing.JTextField" binding="databaseNameInput">
@@ -71,7 +71,7 @@
               <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_label_dbPassword"/>
+              <text resource-bundle="strings" key="itemLoc_label_dbPassword"/>
             </properties>
           </component>
           <component id="d5053" class="javax.swing.JPasswordField" binding="passwordInput">
@@ -89,7 +89,7 @@
               <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_label_dbUser"/>
+              <text resource-bundle="strings" key="itemLoc_label_dbUser"/>
             </properties>
           </component>
           <component id="586be" class="javax.swing.JTextField" binding="databaseUsernameInput">
@@ -105,7 +105,7 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="10" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_label_portNumber"/>
+              <text resource-bundle="strings" key="itemLoc_label_portNumber"/>
             </properties>
           </component>
           <component id="9f60e" class="javax.swing.JButton" binding="setDefaultPortButton">
@@ -113,7 +113,7 @@
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defPort"/>
+              <text resource-bundle="strings" key="itemLoc_button_defPort"/>
             </properties>
           </component>
           <component id="b58ad" class="javax.swing.JSpinner" binding="timeoutInput">
@@ -127,7 +127,7 @@
               <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defTimeout"/>
+              <text resource-bundle="strings" key="itemLoc_button_defTimeout"/>
             </properties>
           </component>
           <component id="25ab" class="javax.swing.JButton" binding="setDefaultServerButton">
@@ -135,7 +135,7 @@
               <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defServer"/>
+              <text resource-bundle="strings" key="itemLoc_button_defServer"/>
             </properties>
           </component>
           <component id="bd13d" class="javax.swing.JButton" binding="setDefaultNameButton">
@@ -143,7 +143,7 @@
               <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defDbName"/>
+              <text resource-bundle="strings" key="itemLoc_button_defDbName"/>
             </properties>
           </component>
           <component id="49722" class="javax.swing.JButton" binding="setDefaultUsernameButton">
@@ -151,7 +151,7 @@
               <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defDbUser"/>
+              <text resource-bundle="strings" key="itemLoc_button_defDbUser"/>
             </properties>
           </component>
           <component id="1fd01" class="javax.swing.JButton" binding="setDefaultPasswordButton">
@@ -159,7 +159,7 @@
               <grid row="8" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defDbPassword"/>
+              <text resource-bundle="strings" key="itemLoc_button_defDbPassword"/>
             </properties>
           </component>
           <component id="f998e" class="javax.swing.JButton" binding="browseButton" default-binding="true">
@@ -167,7 +167,7 @@
               <grid row="11" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_browse"/>
+              <text resource-bundle="strings" key="itemLoc_button_browse"/>
             </properties>
           </component>
           <component id="d22e4" class="javax.swing.JButton" binding="setDefaultLocationButton">
@@ -175,7 +175,7 @@
               <grid row="10" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text resource-bundle="res/strings" key="itemLoc_button_defImgLoc"/>
+              <text resource-bundle="strings" key="itemLoc_button_defImgLoc"/>
             </properties>
           </component>
           <grid id="4ed84" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -196,7 +196,7 @@
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="ok"/>
+                  <text resource-bundle="strings" key="ok"/>
                 </properties>
               </component>
               <component id="be98c" class="javax.swing.JButton" binding="cancelButton" default-binding="true">
@@ -204,7 +204,7 @@
                   <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text resource-bundle="res/strings" key="cancel"/>
+                  <text resource-bundle="strings" key="cancel"/>
                 </properties>
               </component>
             </children>
@@ -239,7 +239,7 @@
               <component id="bcc8" class="javax.swing.JLabel">
                 <constraints/>
                 <properties>
-                  <text resource-bundle="res/strings" key="itemLoc_label_DbTimeout"/>
+                  <text resource-bundle="strings" key="itemLoc_label_DbTimeout"/>
                 </properties>
               </component>
               <component id="eb9eb" class="javax.swing.JButton" binding="timeoutHelpButton">
@@ -255,7 +255,7 @@
                   <opaque value="false"/>
                   <requestFocusEnabled value="false"/>
                   <text value=""/>
-                  <toolTipText resource-bundle="res/strings" key="itemLoc_helpText_timeout"/>
+                  <toolTipText resource-bundle="strings" key="itemLoc_helpText_timeout"/>
                   <visible value="true"/>
                 </properties>
               </component>
