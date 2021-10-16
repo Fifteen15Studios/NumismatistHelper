@@ -9,7 +9,7 @@ import javax.swing.text.DocumentFilter
  * This class, as it stands, does not filter anything. You must use a subclass in order to filter input.
  *
  * When creating a custom filter, simply create a subclass of MyDocFilter and override the test function.
- * This function determines whether or not input is acceptable for the filter. If this method returns true,
+ * This function determines whether input is acceptable for the filter. If this method returns true,
  * the input will be allowed, if it returns false the input will not be entered.
  *
  * Example of setting filter on JTextField in Java:

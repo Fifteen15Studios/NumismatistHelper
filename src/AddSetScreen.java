@@ -1,5 +1,4 @@
 import items.*;
-import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,6 +15,7 @@ import java.util.ArrayList;
 
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
+@SuppressWarnings("rawtypes")
 public class AddSetScreen extends AddSetItemScreen {
 
     private JTextField nameInput;
@@ -48,7 +48,7 @@ public class AddSetScreen extends AddSetItemScreen {
     private JButton addContainerButton;
     private JScrollPane scrollPane;
 
-    private Set originalSet = new Set();
+    private final Set originalSet;
     private Set set = new Set();
 
     public AddSetScreen(JFrame parent) {
@@ -229,8 +229,8 @@ public class AddSetScreen extends AddSetItemScreen {
                             });
                             JMenuItem removeCoin = new JMenuItem(Main.getString("addSet_rtClickItem_remove"));
                             removeCoin.addActionListener(e1 ->{
-                                removeItem(selectedItem);
-                                setInfo();
+                                if(removeItem(selectedItem))
+                                    setInfo();
                             });
                             coinListRightClickMenu.add(editCoin);
                             coinListRightClickMenu.add(removeCoin);
@@ -526,6 +526,7 @@ public class AddSetScreen extends AddSetItemScreen {
         setInfo();
     }
 
+    @SuppressWarnings("unchecked")
     void setCoinList() {
         listModel.removeAllElements();
 
