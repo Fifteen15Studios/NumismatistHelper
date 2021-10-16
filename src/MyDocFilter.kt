@@ -269,7 +269,7 @@ class MyDoubleFilter : MyDocFilter() {
             // A "d" or "f" at the end of a number is accepted, as this indicates how to format the number.
             // Also accepts a space (" "). We do not want this, so explicitly reject these scenarios.
             // Also, check max precision, max int digits, and max total digits
-            if (text.toLowerCase(Locale.ROOT).contains("d") || text.toLowerCase(Locale.ROOT).contains("f") ||
+            if (text.lowercase(Locale.ROOT).contains("d") || text.lowercase(Locale.ROOT).contains("f") ||
                     text.contains(" ") || decimalPlaces > maxPrecision || integerPlaces > maxIntDigits ||
                     totalDigits > maxTotalDigits)
                         return false

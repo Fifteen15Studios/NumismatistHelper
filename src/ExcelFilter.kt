@@ -1,4 +1,5 @@
 import java.io.File
+import java.util.*
 import javax.swing.filechooser.FileFilter
 
 object ExcelExtensions {
@@ -12,7 +13,7 @@ object ExcelExtensions {
         val s = f.name
         val i = s.lastIndexOf('.')
         if (i > 0 && i < s.length - 1) {
-            ext = s.substring(i + 1).toLowerCase()
+            ext = s.substring(i + 1).lowercase(Locale.ROOT)
         }
         return ext
     }

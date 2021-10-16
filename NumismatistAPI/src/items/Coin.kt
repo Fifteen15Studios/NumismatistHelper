@@ -3,6 +3,7 @@ package items
 import NumismatistAPI
 import java.io.FileNotFoundException
 import java.sql.SQLException
+import java.util.*
 
 class Coin : SetItem()
 {
@@ -136,7 +137,7 @@ class Coin : SetItem()
 
             sql = "INSERT INTO Coins(CountryName, CurrencyAbbr, Type, Yr, Denomination, CurValue, MintMark, Graded," +
                     " Grade, Error, ErrorType, SetID, SlotID, ContainerID, ObvImgExt, RevImgExt, Note)\n" +
-                    "VALUES(\"${countryName}\", \"${currency.nameAbbr}\", \"${name}\", ${year}, ${denomination}, ${value}, \"${mintMark.toUpperCase()}\", ${graded}," +
+                    "VALUES(\"${countryName}\", \"${currency.nameAbbr}\", \"${name}\", ${year}, ${denomination}, ${value}, \"${mintMark.uppercase(Locale.ROOT)}\", ${graded}," +
                     " \"${condition}\", ${error}, \"${errorType}\", $newSetID, $slotID, $containerID, \"$obvImgExt\", \"$revImgExt\", \"${note}\");"
 
             rows = api.runUpdate(sql)

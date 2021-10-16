@@ -1284,7 +1284,7 @@ class NumismatistAPI {
 
         fun processNode(node: Node, book: Book): Any {
 
-            when (node.nodeName.toLowerCase()) {
+            when (node.nodeName.lowercase(Locale.ROOT)) {
                 "page" -> {
                     val page = BookPage()
 
@@ -1342,7 +1342,7 @@ class NumismatistAPI {
                         }
                     }
                     else
-                        when (size.toLowerCase()) {
+                        when (size.lowercase(Locale.ROOT)) {
                             "penny" -> {PageSlot.SIZE_PENNY}
                             "cent" -> {PageSlot.SIZE_PENNY}
                             "nickel" -> {PageSlot.SIZE_NICKEL}
@@ -1408,7 +1408,7 @@ class NumismatistAPI {
 
         fun parseXmlNode(node: Node) : Any {
 
-            when (node.nodeName.toLowerCase()) {
+            when (node.nodeName.lowercase(Locale.ROOT)) {
                 "country" -> {
                     val country = Country()
                     if (node.nodeType == Node.ELEMENT_NODE) {
@@ -1516,31 +1516,7 @@ class NumismatistAPI {
      * `defaultObj` is `null`
      * @since 9
     </T> */
-    fun <T> requireNonNullElse(obj: T?, defaultObj: T): T {
+    private fun <T> requireNonNullElse(obj: T?, defaultObj: T): T {
         return obj ?: Objects.requireNonNull(defaultObj, "defaultObj")
-    }
-
-
-    /**
-     * Checks that the specified object reference is not `null` and
-     * throws a customized [NullPointerException] if it is. This method
-     * is designed primarily for doing parameter validation in methods and
-     * constructors with multiple parameters, as demonstrated below:
-     * <blockquote><pre>
-     * public Foo(Bar bar, Baz baz) {
-     * this.bar = Objects.requireNonNull(bar, "bar must not be null");
-     * this.baz = Objects.requireNonNull(baz, "baz must not be null");
-     * }
-    </pre></blockquote> *
-     *
-     * @param obj     the object reference to check for nullity
-     * @param message detail message to be used in the event that a `NullPointerException` is thrown
-     * @param <T> the type of the reference
-     * @return `obj` if not `null`
-     * @throws NullPointerException if `obj` is `null`
-    </T> */
-    fun <T> requireNonNull(obj: T?, message: String?): T {
-        if (obj == null) throw java.lang.NullPointerException(message)
-        return obj
     }
 }
