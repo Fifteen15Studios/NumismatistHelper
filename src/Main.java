@@ -562,7 +562,7 @@ public class Main extends JFrame {
 
         JMenuItem help = new JMenuItem(getString("helpMenu_help"));
         help.addActionListener( e-> {
-            HelpDialog helpDialog = new HelpDialog();
+            HelpDialog helpDialog = new HelpDialog(this);
             helpDialog.pack();
             // Center in this window
             helpDialog.setLocationRelativeTo(this);

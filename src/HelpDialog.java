@@ -1,3 +1,9 @@
+
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -7,21 +13,25 @@ public class HelpDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JList topicsList;
-    private JTextArea textArea;
+    private JTextPane textArea;
     private JScrollPane infoScrollPane;
 
+    private final JFrame parent;
+
     @SuppressWarnings("unchecked")
-    public HelpDialog() {
+    public HelpDialog(JFrame parent) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setTitle(Main.getString("helpScreen_title"));
-        setSize(new Dimension(500,400));
-        setMinimumSize(new Dimension(500,400));
+
+        this.parent = parent;
 
         setIconImage(Main.getIcon().getImage());
 
         buttonOK.addActionListener(e -> onOK());
+        textArea.setContentType("text/html");
+        infoScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         DefaultListModel topics = new DefaultListModel();
 
@@ -41,38 +51,47 @@ public class HelpDialog extends JDialog {
 
             // TODO: Use markdown
             int index = topicsList.getSelectedIndex();
+            Parser parser = Parser.builder().build();
+            Node document;
 
             switch (index) {
                 case 0: {
-                    textArea.setText(Main.getString("helpScreen_text_coins"));
+                    document = parser.parse(Main.getString("helpScreen_text_coins"));
                     break;
                 }
                 case 1: {
                     // TODO: Update text when folders are finished
-                    textArea.setText(Main.getString("helpScreen_text_folders"));
+                    document = parser.parse(Main.getString("helpScreen_text_folders"));
                     break;
                 }
                 case 2: {
-                    textArea.setText(Main.getString("helpScreen_text_banknotes"));
+                    document = parser.parse(Main.getString("helpScreen_text_banknotes"));
                     break;
                 }
                 case 3: {
-                    textArea.setText(Main.getString("helpScreen_text_sets"));
+                    document = parser.parse(Main.getString("helpScreen_text_sets"));
                     break;
                 }
                 case 4: {
-                    textArea.setText(Main.getString("helpScreen_text_containers"));
+                    document = parser.parse(Main.getString("helpScreen_text_containers"));
                     break;
                 }
                 case 5: {
-                    textArea.setText(Main.getString("helpScreen_text_countries"));
+                    document = parser.parse(Main.getString("helpScreen_text_countries"));
                     break;
                 }
                 case 6: {
-                    textArea.setText(Main.getString("helpScreen_text_currencies"));
+                    document = parser.parse(Main.getString("helpScreen_text_currencies"));
+                    break;
+                }
+                default: {
+                    document = parser.parse("");
                     break;
                 }
             }
+
+            HtmlRenderer renderer = HtmlRenderer.builder().build();
+            textArea.setText(renderer.render(document));
 
             // Scroll to top of selected area
             javax.swing.SwingUtilities.invokeLater(() -> infoScrollPane.getVerticalScrollBar().setValue(0));
@@ -92,9 +111,21 @@ public class HelpDialog extends JDialog {
         contentPane.registerKeyboardAction(e -> onOK(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
     }
 
     private void onOK() {
         dispose();
+    }
+
+    @Override
+    public void setVisible(boolean b) {
+
+        setSize(new Dimension(500,400));
+        setMinimumSize(new Dimension(500,400));
+
+        setLocationRelativeTo(parent);
+
+        super.setVisible(b);
     }
 }

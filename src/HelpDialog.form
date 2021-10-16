@@ -69,13 +69,9 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="4e5b9" class="javax.swing.JTextArea" binding="textArea">
+              <component id="ec8c6" class="javax.swing.JTextPane" binding="textArea">
                 <constraints/>
-                <properties>
-                  <editable value="false"/>
-                  <lineWrap value="true"/>
-                  <wrapStyleWord value="true"/>
-                </properties>
+                <properties/>
               </component>
             </children>
           </scrollpane>
