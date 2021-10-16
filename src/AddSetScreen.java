@@ -82,7 +82,6 @@ public class AddSetScreen extends AddSetItemScreen {
         ComboBoxHelper.setContainerList(locationDropDown, api, addContainerButton, parent);
 
         cancelButton.addActionListener(e -> {
-            // TODO: I shouldn't have to go through this
             // Find items that were added to the set and remove them
             ArrayList<SetItem> removeItems = new ArrayList<>();
             for(SetItem item : this.set.getItems()) {
