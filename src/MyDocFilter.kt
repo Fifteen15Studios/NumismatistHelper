@@ -42,6 +42,7 @@ open class MyDocFilter : DocumentFilter() {
             denominationFilter.minValue = 0.0
             // Allow 3 decimal points of precision for half cents
             denominationFilter.maxPrecision = 3
+            denominationFilter.maxTotalDigits=20
 
             return denominationFilter
         }
@@ -54,6 +55,7 @@ open class MyDocFilter : DocumentFilter() {
             // value is always more than 0
             valueFilter.minValue = 0.0
             valueFilter.maxPrecision = 2
+            valueFilter.maxTotalDigits=20
 
             return valueFilter
         }
