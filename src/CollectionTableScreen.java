@@ -494,21 +494,19 @@ public class CollectionTableScreen {
 
         try {
             coins = api.getCoins();
+
+            // If adding to a set
             if(set != null) {
+
                 ArrayList<Coin> coinsInSet = new ArrayList<>();
-                ArrayList<Bill> billsInSet = new ArrayList<>();
-                ArrayList<Set> setsInSet = new ArrayList<>();
+
+                // Remove all coins already in the set
                 for (SetItem item : set.getItems()) {
                     if (item instanceof Coin)
                         coinsInSet.add((Coin) item);
-                    else if(item instanceof Bill)
-                        billsInSet.add((Bill) item);
-                    else if(item instanceof Set)
-                        setsInSet.add((Set) item);
                 }
+
                 coins.removeAll(coinsInSet);
-                bills.removeAll(billsInSet);
-                sets.removeAll(setsInSet);
             }
         }
         catch (Exception ex) {
