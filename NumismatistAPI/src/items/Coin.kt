@@ -132,6 +132,8 @@ class Coin : SetItem()
 
             if(rows == 1) {
                 api.setCoin(id, this)
+
+                setInCoinList(api)
             }
         }
         else {
@@ -149,13 +151,26 @@ class Coin : SetItem()
                 if(newID.next()) {
                     id = Integer.parseInt(newID.getString("GENERATED_KEY"))
                 }
-                api.getCoins().add(this)
+
+                setInCoinList(api)
             }
         }
 
         api.disconnect()
 
         return rows
+    }
+
+    /**
+     * Adds or removes coin to/from api list of coins
+     *
+     * @param api the api object to add or remove to/from
+     */
+    private fun setInCoinList(api : NumismatistAPI) {
+        if(set == null && !api.getCoins().contains(this))
+            api.getCoins().add(this)
+        else
+            api.getCoins().remove(this)
     }
 
     /**

@@ -143,6 +143,7 @@ class Set : SetItem() {
                     "WHERE ID=${id};"
 
             var rows = api.runUpdate(sql)
+            setInSetList(api)
 
             if(rows == 1) {
                 var errors = 0
@@ -200,7 +201,7 @@ class Set : SetItem() {
                 if(newID.next()) {
                     id = Integer.parseInt(newID.getString("GENERATED_KEY"))
                 }
-                api.getSets().add(this)
+                setInSetList(api)
 
                 var errors = 0
                 try {
@@ -234,6 +235,18 @@ class Set : SetItem() {
 
             return rows
         }
+    }
+
+    /**
+     * Adds or removes set to/from api list of sets
+     *
+     * @param api the api object to add or remove to/from
+     */
+    private fun setInSetList(api : NumismatistAPI) {
+        if(set == null && !api.getSets().contains(this))
+            api.getSets().add(this)
+        else
+            api.getSets().remove(this)
     }
 
     /**

@@ -86,8 +86,11 @@ class Bill : SetItem() {
 
             rows = api.runUpdate(sql)
 
-            if(rows == 1)
+            if(rows == 1) {
                 api.setBill(id, this)
+
+                setInBillList(api)
+            }
         }
         else {
 
@@ -105,13 +108,26 @@ class Bill : SetItem() {
                 if(newID.next()) {
                     id = Integer.parseInt(newID.getString("GENERATED_KEY"))
                 }
-                api.getBills().add(this)
+
+                setInBillList(api)
             }
         }
 
         api.disconnect()
 
         return rows
+    }
+
+    /**
+     * Adds or removes bill to/from api list of bills
+     *
+     * @param api the api object to add or remove to/from
+     */
+    private fun setInBillList(api : NumismatistAPI) {
+        if(set == null && !api.getBills().contains(this))
+            api.getBills().add(this)
+        else
+            api.getBills().remove(this)
     }
 
     /**
