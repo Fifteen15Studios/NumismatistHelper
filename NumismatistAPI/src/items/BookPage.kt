@@ -3,6 +3,7 @@ package items
 import NumismatistAPI
 import java.io.FileNotFoundException
 import java.sql.SQLException
+import java.text.MessageFormat
 
 /**
  * A page of a Book (or folder) that holds Coins. Each page can have multiple slots. Each slot holds a single coin.
@@ -37,6 +38,7 @@ class BookPage : DatabaseItem() {
      *
      * @return How many rows were affected by the sql command
      */
+    @kotlin.jvm.Throws(IllegalStateException::class)
     override fun saveToDb(api: NumismatistAPI) : Int {
 
         val sql : String
@@ -52,8 +54,17 @@ class BookPage : DatabaseItem() {
             if(rows ==1) {
                 for (row in this.rows) {
                     for (slot in row)
-                    // TODO: Handle Errors
-                        slot.saveToDb(api)
+                        try {
+                            if(slot.saveToDb(api) != 1) {
+                                throw IllegalStateException(MessageFormat.format(
+                                    NumismatistAPI.getString("exception_itemNotSaved")!!,
+                                    NumismatistAPI.getString("property_slot_toString")
+                                ))
+                            }
+                        }
+                        catch (e : IllegalStateException) {
+                            throw e
+                        }
                 }
             }
         }
@@ -73,8 +84,17 @@ class BookPage : DatabaseItem() {
 
                 for (row in this.rows) {
                     for (slot in row) {
-                        // TODO: Handle Errors
-                        slot.saveToDb(api)
+                        try {
+                            if(slot.saveToDb(api) != 1) {
+                                throw IllegalStateException(MessageFormat.format(
+                                    NumismatistAPI.getString("exception_itemNotSaved")!!,
+                                    NumismatistAPI.getString("property_slot_toString")
+                                ))
+                            }
+                        }
+                        catch (e : IllegalStateException) {
+                            throw e
+                        }
                     }
                 }
             }
@@ -90,7 +110,7 @@ class BookPage : DatabaseItem() {
      *
      * @return True if book was successfully removed, otherwise false
      */
-    @Throws(SQLException::class, FileNotFoundException::class)
+    @Throws(SQLException::class, FileNotFoundException::class, IllegalStateException::class)
     override fun removeFromDb(api: NumismatistAPI) : Boolean {
 
         val sql = "DELETE FROM BookPages WHERE ID=${id}"
@@ -101,11 +121,21 @@ class BookPage : DatabaseItem() {
 
         if(rows==1) {
             // Remove Page Slots
-            // TODO: Handle Error
             for(row in this.rows) {
                for(slot in row)
-                   slot.removeFromDb(api)
+                   try {
+                       slot.removeFromDb(api)
+                   }
+                   catch (ise : IllegalStateException) {
+                       throw ise
+                   }
             }
+        }
+        else {
+            throw IllegalStateException(MessageFormat.format(
+                NumismatistAPI.getString("exception_itemNotRemoved")!!,
+                NumismatistAPI.getString("property_page_toString"))
+            )
         }
 
         return rows == 1

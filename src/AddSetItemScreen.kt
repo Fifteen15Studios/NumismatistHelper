@@ -141,7 +141,7 @@ open class AddSetItemScreen(var parent: JFrame) {
                         if(previousScreen!!.parentSet!!.name != "")
                             MessageFormat.format(Main.getString("addSet_title_addToSet"), previousScreen!!.parentSet!!.name)
                         else
-                            MessageFormat.format(Main.getString("addSet_title_addToSet"), Main.getString("property_set_toString"))
+                            MessageFormat.format(Main.getString("addSet_title_addToSet"), NumismatistAPI.getString("property_set_toString"))
                     } else {
                         Main.getString("addSet_title_add")
                     }
@@ -150,7 +150,7 @@ open class AddSetItemScreen(var parent: JFrame) {
                 }
                 else {
                     val name = if(parentSet!!.name == "")
-                        Main.getString("property_set_toString")
+                        NumismatistAPI.getString("property_set_toString")
                     else
                         parentSet!!.name
 

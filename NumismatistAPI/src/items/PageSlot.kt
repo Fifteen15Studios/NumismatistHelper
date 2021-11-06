@@ -3,6 +3,7 @@ package items
 import NumismatistAPI
 import java.io.FileNotFoundException
 import java.sql.SQLException
+import java.text.MessageFormat
 
 /**
  * A slot in a BookPage, which is in a Book. A slot can hold a single coin. Slots can be of various physical size
@@ -78,6 +79,7 @@ class PageSlot() : DatabaseItem() {
      *
      * @return How many rows were affected by the sql command
      */
+    @kotlin.jvm.Throws(IllegalStateException::class)
     override fun saveToDb(api: NumismatistAPI) : Int {
         val sql : String
 
@@ -92,7 +94,12 @@ class PageSlot() : DatabaseItem() {
             rows = api.runUpdate(sql)
 
             if(rows == 1 && coin != null)
-                coin!!.saveToDb(api)
+                if(coin?.saveToDb(api) != 1) {
+                    throw IllegalStateException(MessageFormat.format(
+                        NumismatistAPI.getString("exception_itemNotSaved")!!,
+                        NumismatistAPI.getString("property_coin_toString"))
+                    )
+                }
         }
         else {
             sql = "INSERT INTO PageSlots(PageID, RowNum, ColNum, Denomination, Label, Label2, Label3)\n" +
@@ -109,8 +116,12 @@ class PageSlot() : DatabaseItem() {
                 }
 
                 if(coin != null)
-                    // TODO: Handle Errors
-                    coin?.saveToDb(api)
+                    if(coin?.saveToDb(api) != 1) {
+                        throw IllegalStateException(MessageFormat.format(
+                            NumismatistAPI.getString("exception_itemNotSaved")!!,
+                            NumismatistAPI.getString("property_coin_toString"))
+                        )
+                    }
             }
         }
 
@@ -124,7 +135,7 @@ class PageSlot() : DatabaseItem() {
      *
      * @return True if book was successfully removed, otherwise false
      */
-    @Throws(SQLException::class, FileNotFoundException::class)
+    @Throws(SQLException::class, FileNotFoundException::class, IllegalStateException::class)
     override fun removeFromDb(api: NumismatistAPI) : Boolean {
 
         val sql = "DELETE FROM PageSlots WHERE ID=${id}"
@@ -135,8 +146,18 @@ class PageSlot() : DatabaseItem() {
 
         if(rows==1) {
             // Remove the coin in the slot
-            // TODO: Handle Error
-            coin?.removeFromDb(api)
+            try {
+                coin?.removeFromDb(api)
+            }
+            catch (ise : IllegalStateException) {
+                throw ise
+            }
+        }
+        else {
+            throw IllegalStateException(MessageFormat.format(
+                NumismatistAPI.getString("exception_itemNotRemoved")!!,
+                NumismatistAPI.getString("property_slot_toString"))
+            )
         }
 
         return rows == 1

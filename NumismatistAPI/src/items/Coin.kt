@@ -3,6 +3,7 @@ package items
 import NumismatistAPI
 import java.io.FileNotFoundException
 import java.sql.SQLException
+import java.text.MessageFormat
 import java.util.*
 
 class Coin : SetItem()
@@ -164,7 +165,7 @@ class Coin : SetItem()
      *
      * @return True if coin was successfully removed, otherwise false
      */
-    @Throws(SQLException::class, FileNotFoundException::class)
+    @Throws(SQLException::class, FileNotFoundException::class, IllegalStateException::class)
     override fun removeFromDb(api: NumismatistAPI) : Boolean {
 
         val sql = "DELETE FROM Coins WHERE ID=${id}"
@@ -179,6 +180,12 @@ class Coin : SetItem()
             // Delete pictures
             deleteObvImage()
             deleteRevImage()
+        }
+        else {
+            throw IllegalStateException(MessageFormat.format(
+                NumismatistAPI.getString("exception_itemNotRemoved")!!,
+                NumismatistAPI.getString("property_coin_toString"))
+            )
         }
 
         return rows == 1

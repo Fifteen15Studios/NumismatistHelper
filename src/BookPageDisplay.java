@@ -67,7 +67,13 @@ public class BookPageDisplay extends MyScreen {
             if(errorMessage.toString().equals("")) {
 
                 // Save book
-                int rows = getPage().getBook().saveToDb(api);
+                int rows = 0;
+                try {
+                    rows = getPage().getBook().saveToDb(api);
+                }
+                catch (IllegalStateException ise) {
+                    ise.printStackTrace();
+                }
 
                 if(rows == 1)
                     ((Main) parent).changeScreen(((Main) parent).getPanel(), "");

@@ -3,6 +3,7 @@ package items
 import NumismatistAPI
 import java.io.FileNotFoundException
 import java.sql.SQLException
+import java.text.MessageFormat
 
 /**
  * A book (or folder) that holds loose coins. These books often have multiple pages, and those pages have multiple
@@ -52,6 +53,7 @@ class Book : CollectionItem() {
      *
      * @return How many rows were affected by the sql command
      */
+    @kotlin.jvm.Throws(IllegalStateException::class)
     override fun saveToDb(api: NumismatistAPI) : Int {
 
         val sql: String
@@ -74,7 +76,17 @@ class Book : CollectionItem() {
 
             if(rows == 1) {
                 for(page in pages) {
-                    page.saveToDb(api)
+                    try {
+                        if(page.saveToDb(api) != 1) {
+                            throw IllegalStateException(MessageFormat.format(
+                                NumismatistAPI.getString("exception_itemNotSaved")!!,
+                                NumismatistAPI.getString("property_page_toString")
+                            ))
+                        }
+                    }
+                    catch (e : IllegalStateException) {
+                        throw e
+                    }
                 }
 
                 api.setBook(id, this)
@@ -97,11 +109,18 @@ class Book : CollectionItem() {
                 }
 
                 for(page in pages) {
-                    // TODO: Handle Errors
-                    page.saveToDb(api)
+                    try {
+                        if(page.saveToDb(api) != 1) {
+                            throw IllegalStateException(MessageFormat.format(
+                                NumismatistAPI.getString("exception_itemNotSaved")!!,
+                                NumismatistAPI.getString("property_page_toString")))
+                        }
+                    }
+                    catch (e : IllegalStateException) {
+                        throw e
+                    }
                 }
 
-                // TODO: if no errors
                 api.getBooks().add(this)
             }
         }
@@ -129,11 +148,21 @@ class Book : CollectionItem() {
 
         if(rows==1) {
             // Remove the pages in the book
-            // TODO: Handle Error
             for(page in pages)
-                page.removeFromDb(api)
+                try {
+                    page.removeFromDb(api)
+                }
+                catch (ise : IllegalStateException) {
+                    throw ise
+                }
 
             api.getBooks().remove(this)
+        }
+        else {
+            throw IllegalStateException(MessageFormat.format(
+                NumismatistAPI.getString("exception_itemNotRemoved")!!,
+                NumismatistAPI.getString("property_book_toString"))
+            )
         }
 
         return rows == 1

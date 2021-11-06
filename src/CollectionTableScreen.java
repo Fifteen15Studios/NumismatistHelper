@@ -247,20 +247,20 @@ public class CollectionTableScreen {
     }
 
     private void setSetsTable() {
-        String[] columnNames = {Main.getString("property_set_id"),
-                Main.getString("property_set_year"),
-                Main.getString("property_set_name"),
-                Main.getString("property_set_items"),
-                Main.getString("property_set_faceValue"),
-                Main.getString("property_set_value"),
-                Main.getString("property_set_note"),
-                Main.getString("property_set_container")};
+        String[] columnNames = {NumismatistAPI.Companion.getString("property_set_id"),
+                NumismatistAPI.Companion.getString("property_set_year"),
+                NumismatistAPI.Companion.getString("property_set_name"),
+                NumismatistAPI.Companion.getString("property_set_items"),
+                NumismatistAPI.Companion.getString("property_set_faceValue"),
+                NumismatistAPI.Companion.getString("property_set_value"),
+                NumismatistAPI.Companion.getString("property_set_note"),
+                NumismatistAPI.Companion.getString("property_set_container")};
 
-        String[] totalsColumns = {Main.getString("property_set_totals"),
-                Main.getString("property_set_totals_sets"),
-                Main.getString("property_set_totals_items"),
-                Main.getString("property_set_totals_faceValue"),
-                Main.getString("property_set_totals_value")};
+        String[] totalsColumns = {NumismatistAPI.Companion.getString("property_set_totals"),
+                NumismatistAPI.Companion.getString("property_set_totals_sets"),
+                NumismatistAPI.Companion.getString("property_set_totals_items"),
+                NumismatistAPI.Companion.getString("property_set_totals_faceValue"),
+                NumismatistAPI.Companion.getString("property_set_totals_value")};
 
         try {
             sets = api.getSets();
@@ -345,14 +345,14 @@ public class CollectionTableScreen {
         }
 
         // Put totals in the final row
-        totalsData[0][0] = "<HTML><B>" + Main.getString("property_set_totals") + "</B></HTML>";
-        totalsData[0][1] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_sets"),
+        totalsData[0][0] = "<HTML><B>" + NumismatistAPI.Companion.getString("property_set_totals") + "</B></HTML>";
+        totalsData[0][1] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_set_totals_sets"),
                 sets.size()) + "</B></HTML>";
-        totalsData[0][2] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_items"),
+        totalsData[0][2] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_set_totals_items"),
                 itemCount) + "</B></HTML>";
-        totalsData[0][3] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_faceValue"),
+        totalsData[0][3] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_set_totals_faceValue"),
                 format.format(totalFaceValue)) + "</B></HTML>";
-        totalsData[0][4] = "<HTML><B>" + MessageFormat.format(Main.getString("property_set_totals_value"),
+        totalsData[0][4] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_set_totals_value"),
                 format.format(totalValue)) + "</B></HTML>";
 
         // Set data for table
@@ -422,7 +422,7 @@ public class CollectionTableScreen {
 
                             String name;
                             if(finalSet.getName().equals(""))
-                                name = Main.getString("property_set_toString");
+                                name = NumismatistAPI.Companion.getString("property_set_toString");
                             else
                                 name = finalSet.getName();
 
@@ -472,25 +472,25 @@ public class CollectionTableScreen {
         });
 
         setsTable.addSort(new ArrayList<>(List.of(0, 1, 3)), new ArrayList<>(List.of(4, 5)));
-        setsTable.hideColumn(Main.getString("property_set_id"));
+        setsTable.hideColumn(NumismatistAPI.Companion.getString("property_set_id"));
     }
 
     private void setCoinsTable() {
 
-        String[] columnNames = {Main.getString("property_coin_id"),
-                Main.getString("property_coin_toString"),
-                Main.getString("property_coin_denomination"),
-                Main.getString("property_coin_value"),
-                Main.getString("property_coin_country"),
-                Main.getString("property_coin_grade"),
-                Main.getString("property_coin_error"),
-                Main.getString("property_coin_note"),
-                Main.getString("property_coin_container")};
+        String[] columnNames = {NumismatistAPI.Companion.getString("property_coin_id"),
+                NumismatistAPI.Companion.getString("property_coin_toString"),
+                NumismatistAPI.Companion.getString("property_coin_denomination"),
+                NumismatistAPI.Companion.getString("property_coin_value"),
+                NumismatistAPI.Companion.getString("property_coin_country"),
+                NumismatistAPI.Companion.getString("property_coin_grade"),
+                NumismatistAPI.Companion.getString("property_coin_error"),
+                NumismatistAPI.Companion.getString("property_coin_note"),
+                NumismatistAPI.Companion.getString("property_coin_container")};
 
-        String[] totalColumns = {Main.getString("property_coin_totals"),
-                Main.getString("property_coin_totals_coins"),
-                Main.getString("property_coin_totals_faceValue"),
-                Main.getString("property_coin_totals_value")};
+        String[] totalColumns = {NumismatistAPI.Companion.getString("property_coin_totals"),
+                NumismatistAPI.Companion.getString("property_coin_totals_coins"),
+                NumismatistAPI.Companion.getString("property_coin_totals_faceValue"),
+                NumismatistAPI.Companion.getString("property_coin_totals_value")};
 
         try {
             coins = api.getCoins();
@@ -620,12 +620,12 @@ public class CollectionTableScreen {
         else
             faceValue = format.format(totalFaceValue);
 
-        totalData[0][0] = "<HTML><B>" + Main.getString("property_coin_totals") + "</B></HTML>";
-        totalData[0][1] = "<HTML><B>" + MessageFormat.format(Main.getString("property_coin_totals_coins"),
+        totalData[0][0] = "<HTML><B>" + NumismatistAPI.Companion.getString("property_coin_totals") + "</B></HTML>";
+        totalData[0][1] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_coin_totals_coins"),
                 coins.size()) + "</B></HTML>";
-        totalData[0][2] = "<HTML><B>" + MessageFormat.format(Main.getString("property_coin_totals_faceValue"),
+        totalData[0][2] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_coin_totals_faceValue"),
                 faceValue) + "</B></HTML>";
-        totalData[0][3] = "<HTML><B>" + MessageFormat.format(Main.getString("property_coin_totals_value"),
+        totalData[0][3] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_coin_totals_value"),
                 format.format(totalValue)) + "</B></HTML>";
 
         // Set data for table
@@ -762,28 +762,28 @@ public class CollectionTableScreen {
         });
 
         coinsTable.addSort(new ArrayList<>(List.of(0)), new ArrayList<>(List.of(2,3)));
-        coinsTable.hideColumn(Main.getString("property_coin_id"));
+        coinsTable.hideColumn(NumismatistAPI.Companion.getString("property_coin_id"));
     }
 
     private void setBillsTable() {
-        String[] columnNames = {Main.getString("property_bill_id"),
-                Main.getString("property_bill_toString"),
-                Main.getString("property_bill_denomination"),
-                Main.getString("property_bill_value"),
-                Main.getString("property_bill_country"),
-                Main.getString("property_bill_serial"),
-                Main.getString("property_bill_signatures"),
-                Main.getString("property_bill_grade"),
-                Main.getString("property_bill_error"),
-                Main.getString("property_bill_replacement"),
-                Main.getString("property_bill_note"),
-                Main.getString("property_bill_container")};
+        String[] columnNames = {NumismatistAPI.Companion.getString("property_bill_id"),
+                NumismatistAPI.Companion.getString("property_bill_toString"),
+                NumismatistAPI.Companion.getString("property_bill_denomination"),
+                NumismatistAPI.Companion.getString("property_bill_value"),
+                NumismatistAPI.Companion.getString("property_bill_country"),
+                NumismatistAPI.Companion.getString("property_bill_serial"),
+                NumismatistAPI.Companion.getString("property_bill_signatures"),
+                NumismatistAPI.Companion.getString("property_bill_grade"),
+                NumismatistAPI.Companion.getString("property_bill_error"),
+                NumismatistAPI.Companion.getString("property_bill_replacement"),
+                NumismatistAPI.Companion.getString("property_bill_note"),
+                NumismatistAPI.Companion.getString("property_bill_container")};
 
-        String[] totalColumns = {Main.getString("property_bill_totals"),
-                Main.getString("property_bill_totals_bills"),
-                Main.getString("property_bill_totals_faceValue"),
-                Main.getString("property_bill_totals_value"),
-                Main.getString("property_bill_totals_replacements")};
+        String[] totalColumns = {NumismatistAPI.Companion.getString("property_bill_totals"),
+                NumismatistAPI.Companion.getString("property_bill_totals_bills"),
+                NumismatistAPI.Companion.getString("property_bill_totals_faceValue"),
+                NumismatistAPI.Companion.getString("property_bill_totals_value"),
+                NumismatistAPI.Companion.getString("property_bill_totals_replacements")};
 
         try {
             bills = api.getBills();
@@ -894,14 +894,14 @@ public class CollectionTableScreen {
         }
 
         // Show totals
-        totalData[0][0] = "<HTML><B>" + Main.getString("property_bill_totals") + "</B></HTML>";
-        totalData[0][1] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_bills"),
+        totalData[0][0] = "<HTML><B>" + NumismatistAPI.Companion.getString("property_bill_totals") + "</B></HTML>";
+        totalData[0][1] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_bill_totals_bills"),
                 bills.size()) + "</B></HTML>";
-        totalData[0][2] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_replacements"),
+        totalData[0][2] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_bill_totals_replacements"),
                 totalReplacements) + "</B></HTML>";
-        totalData[0][3] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_faceValue"),
+        totalData[0][3] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_bill_totals_faceValue"),
                 format.format(totalFaceValue)) + "</B></HTML>";
-        totalData[0][4] = "<HTML><B>" + MessageFormat.format(Main.getString("property_bill_totals_value"),
+        totalData[0][4] = "<HTML><B>" + MessageFormat.format(NumismatistAPI.Companion.getString("property_bill_totals_value"),
                 format.format(totalValue)) + "</B></HTML>";
 
         // Set data for table
@@ -1013,7 +1013,7 @@ public class CollectionTableScreen {
         });
 
         billsTable.addSort(new ArrayList<>(List.of(0)), new ArrayList<>(List.of(2,3)));
-        billsTable.hideColumn(Main.getString("property_bill_id"));
+        billsTable.hideColumn(NumismatistAPI.Companion.getString("property_bill_id"));
     }
 
     private void goHome() {

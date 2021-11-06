@@ -159,7 +159,7 @@ public class AddSetScreen extends AddSetItemScreen {
             String name;
 
             if(this.set.getName().equals(""))
-                name = Main.getString("property_set_toString").toLowerCase();
+                name = NumismatistAPI.Companion.getString("property_set_toString").toLowerCase();
             else
                 name = this.set.getName();
 
@@ -548,7 +548,7 @@ public class AddSetScreen extends AddSetItemScreen {
         String name;
 
         if(set.getName().equals(""))
-            name = Main.getString("property_set_toString");
+            name = NumismatistAPI.Companion.getString("property_set_toString");
         else
             name = set.getName();
 
@@ -570,7 +570,7 @@ public class AddSetScreen extends AddSetItemScreen {
         String name;
 
         if(set.getName().equals(""))
-            name = Main.getString("property_set_toString");
+            name = NumismatistAPI.Companion.getString("property_set_toString");
         else
             name = set.getName();
 
@@ -592,7 +592,7 @@ public class AddSetScreen extends AddSetItemScreen {
         String newName;
 
         if(newSet.getName().equals(""))
-            newName = Main.getString("property_set_toString");
+            newName = NumismatistAPI.Companion.getString("property_set_toString");
         else
             newName = newSet.getName();
 
@@ -602,7 +602,7 @@ public class AddSetScreen extends AddSetItemScreen {
         else {
             String name = set.getName();
             if(name.equals(""))
-                name = Main.getString("property_set_toString");
+                name = NumismatistAPI.Companion.getString("property_set_toString");
             String newTitle = MessageFormat.format(Main.getString("addSet_title_addToSet"), name);
             ((Main) getParent()).changeScreen(addSetScreen.getPanel(), newTitle);
         }
