@@ -4,6 +4,49 @@ import kotlin.collections.ArrayList
 
 class Country() {
 
+    /**
+     * Currencies used over a certain range of years
+     */
+    class Range() {
+
+        companion object {
+            const val YEAR_START_INVALID = 9999
+            const val YEAR_END_INVALID = 0
+        }
+
+        constructor(currency: Currency, yrStart: Int, yrEnd : Int) : this() {
+            this.currency = currency
+            this.yrStart = yrStart
+            this.yrEnd = yrEnd
+        }
+
+        /**
+         * Currency in use during this range of years.
+         */
+        var currency = Currency()
+        /**
+         * Year that the currency started being used in this country. If unknown, use YEAR_START_INVALID
+         */
+        var yrStart = YEAR_START_INVALID
+        /**
+         * Year that the currency stopped being used in this country. If unknown, or currency is still in use, use YEAR_END_INVALID
+         */
+        var yrEnd = YEAR_END_INVALID
+
+        fun contains(currency: Currency) : Boolean {
+            return currency.nameAbbr == this.currency.nameAbbr
+        }
+
+        fun contains(year: Int) : Boolean {
+            return if(yrStart == YEAR_START_INVALID)
+                year <= yrEnd
+            else if (yrEnd == YEAR_END_INVALID)
+                year >= yrStart
+            else
+                year in yrStart until yrEnd + 1
+        }
+    }
+
     var name = ""
     /**
      * Unique ID for this item. Provided by the SQL database
@@ -12,12 +55,12 @@ class Country() {
     /**
      * A list of currencies that this country has had
      */
-    var currencies = ArrayList<Currency>()
+    var ranges = ArrayList<Range>()
 
-    constructor(name: String, id: Int, currencies: ArrayList<Currency>) : this() {
+    constructor(name: String, id: Int, ranges: ArrayList<Range>) : this() {
         this.name = name
         this.id = id
-        this.currencies = currencies
+        this.ranges = ranges
     }
 
     companion object {
@@ -289,5 +332,23 @@ class Country() {
                 Country("Zimbabwe", arrayListOf())
             )
         }*/
+    }
+
+    /**
+     * Sorts currencies attached to this country
+     */
+    fun sortCurrencies() {
+
+        do {
+            var moves = 0
+            for (index in 0 until ranges.size - 1) {
+                if (ranges[index].yrStart < ranges[index + 1].yrStart) {
+                    val range = ranges[index]
+                    ranges[index] = ranges[index + 1]
+                    ranges[index + 1] = range
+                    moves++
+                }
+            }
+        }while (moves > 0)
     }
 }

@@ -138,7 +138,9 @@ CREATE TABLE `Countries` (
 CREATE TABLE `CountryCurrencies` (
   `ID` bigint(20) UNSIGNED NOT NULL,
   `CountryName` varchar(100) NOT NULL,
-  `CurrencyAbbr` varchar(10) NOT NULL
+  `CurrencyAbbr` varchar(10) NOT NULL,
+  `YrStart` int(10) UNSIGNED NOT NULL DEFAULT 9999,
+  `YrEnd` int(10) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -152,9 +154,7 @@ CREATE TABLE `Currencies` (
   `Name` varchar(100) DEFAULT NULL,
   `Abbreviation` varchar(10) DEFAULT NULL,
   `Symbol` varchar(10) DEFAULT NULL,
-  `SymbolBefore` tinyint(1) DEFAULT 1,
-  `YrStart` int(10) UNSIGNED NOT NULL DEFAULT 9999,
-  `YrEnd` int(10) UNSIGNED DEFAULT NULL
+  `SymbolBefore` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------

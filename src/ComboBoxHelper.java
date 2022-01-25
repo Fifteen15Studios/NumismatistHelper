@@ -1,4 +1,3 @@
-import items.Book;
 import items.Container;
 import items.Country;
 import items.Currency;
@@ -15,9 +14,7 @@ public class ComboBoxHelper {
         setKeyWord(countryInput, api.getCountries());
 
         // set currency when country changes
-        countryInput.addActionListener(e -> {
-            ComboBoxHelper.setCurrency(countryInput, yearInput, currencyInput, api.getCountries());
-        });
+        countryInput.addActionListener(e -> ComboBoxHelper.setCurrency(countryInput, yearInput, currencyInput, api.getCountries()));
 
         yearInput.addFocusListener(new FocusListener() {
             @Override
@@ -64,25 +61,26 @@ public class ComboBoxHelper {
 
         NumberFormatException numberFormatException = null;
 
-        ArrayList<items.Currency> allCurrencies = new ArrayList<>();
+        ArrayList<Country.Range> ranges = new ArrayList<>();
         ArrayList<items.Currency> validCurrencies = new ArrayList<>();
         ArrayList<String> validIds = new ArrayList<>();
 
         for (Country country : countries) {
             if(country.getName().equals(countryBox.getText())) {
-                allCurrencies = country.getCurrencies();
+                ranges = country.getRanges();
                 break;
             }
         }
 
-        if(allCurrencies.isEmpty()) {
+        if(ranges.isEmpty()) {
             ((JTextField)currencyInput.getEditor().getEditorComponent()).setText("");
             setKeyWord(currencyInput, new ArrayList<String>());
         }
         else {
-            for(items.Currency currency : allCurrencies) {
-                int start = currency.getYrStart();
-                int end = currency.getYrEnd();
+            for(Country.Range range : ranges) {
+                Currency currency = range.getCurrency();
+                int start = range.getYrStart();
+                int end = range.getYrEnd();
 
                 int input = thisYear;
 
@@ -102,7 +100,7 @@ public class ComboBoxHelper {
                     validIds.add(currency.getNameAbbr());
                 }
                 // if year is valid, Check if this currency is valid for this time period
-                else if( (start <= input || start == Currency.YEAR_START_INVALID) && (input <= end || end == Currency.YEAR_END_INVALID) ) {
+                else if( (start <= input || start == Country.Range.YEAR_START_INVALID) && (input <= end || end == Country.Range.YEAR_END_INVALID) ) {
                     validCurrencies.add(currency);
                     validIds.add(currency.getNameAbbr());
                 }
@@ -111,13 +109,13 @@ public class ComboBoxHelper {
             // If no valid currencies for this country / year combination,
             // display all valid currencies for this country
             if(validCurrencies.isEmpty()) {
-                validCurrencies = allCurrencies;
 
                 // Add valid IDs too
                 // Clear it first, just in case
                 validIds.clear();
-                for(items.Currency newCurrency : allCurrencies) {
-                    validIds.add(newCurrency.getNameAbbr());
+                for(Country.Range range : ranges) {
+                    validCurrencies.add(range.getCurrency());
+                    validIds.add(range.getCurrency().getNameAbbr());
                 }
             }
 

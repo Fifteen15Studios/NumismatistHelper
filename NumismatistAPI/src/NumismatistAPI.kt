@@ -11,6 +11,7 @@ import java.sql.SQLException
 import java.util.*
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.collections.ArrayList
 
 @Suppress("unused")
 class NumismatistAPI {
@@ -801,18 +802,18 @@ class NumismatistAPI {
                 }
 
                 Country.sort(countries, topOfCountriesList)
-
-                // Add currencies to countries
-                // Can't do this above because it ruins the connection / results
-                for (country in countries) {
-                    country.currencies = getCountryCurrencies(country.name)
-                }
             }
         } catch (e: SQLException) {
             e.printStackTrace()
         }
 
         disconnect()
+
+        // Add currencies to countries
+        // Can't do this above because it ruins the connection / results
+        for (country in countries) {
+            country.ranges = getCountryCurrencies(country.name)
+        }
 
         countryListener?.countryListChanged(countries)
     }
@@ -962,10 +963,8 @@ class NumismatistAPI {
                     val abbreviation = requireNonNullElse(results.getString("Abbreviation"), "")
                     val symbol = requireNonNullElse(results.getString("Symbol"), "")
                     val symbolBefore = results.getBoolean("SymbolBefore")
-                    val start = results.getInt("YrStart")
-                    val end : Int = results.getInt("YrEnd") // Will be 0 if null
 
-                    currencies.add(Currency(name, id, abbreviation, symbol, symbolBefore, start, end))
+                    currencies.add(Currency(name, id, abbreviation, symbol, symbolBefore))
                 }
             }
         }
@@ -982,15 +981,15 @@ class NumismatistAPI {
      * @param countryName The name of the country whose currencies you are looking for
      * @return A list of currencies used by the provided country
      */
-    private fun getCountryCurrencies(countryName: String): ArrayList<Currency> {
+    private fun getCountryCurrencies(countryName: String): ArrayList<Country.Range> {
 
-        val results = connection.runQuery("SELECT C.* From Currencies As C\n" +
+        val results = connection.runQuery("SELECT C.Abbreviation, CC.YrStart, CC.YrEnd From Currencies As C\n" +
                 "JOIN CountryCurrencies As CC\n" +
                 "ON CC.CurrencyAbbr = C.Abbreviation\n" +
                 "WHERE CC.CountryName = \"$countryName\"\n" +
-                "ORDER BY COALESCE(C.YrEnd, 'zz') DESC;")
+                "ORDER BY COALESCE(CC.YrEnd, 'zz') DESC;")
 
-        val currencies = ArrayList<Currency>()
+        val ranges = ArrayList<Country.Range>()
 
         try {
             if (results != null) {
@@ -1008,15 +1007,13 @@ class NumismatistAPI {
                 for (i in 0 until size) {
                     results.next()
 
-                    val id = results.getInt("ID")
-                    val name = requireNonNullElse(results.getString("Name"), "")
                     val abbreviation = requireNonNullElse(results.getString("Abbreviation"), "")
-                    val symbol = requireNonNullElse(results.getString("Symbol"), "")
-                    val symbolBefore = results.getBoolean("SymbolBefore")
                     val start = results.getInt("YrStart")
                     val end : Int = results.getInt("YrEnd") // Will be 0 if null
 
-                    currencies.add(Currency(name, id, abbreviation, symbol, symbolBefore, start, end))
+                    val currency = findCurrency(abbreviation)
+
+                    ranges.add(Country.Range(currency, start, end))
                 }
             }
         }
@@ -1026,7 +1023,7 @@ class NumismatistAPI {
 
         disconnect()
 
-        return currencies
+        return ranges
     }
 
     /**
@@ -1419,18 +1416,21 @@ class NumismatistAPI {
 
                     for(child in 0  until node.childNodes.length) {
                         try {
-                            country.currencies.add(parseXmlNode(node.childNodes.item(child)) as Currency)
+                            country.ranges.add(parseXmlNode(node.childNodes.item(child)) as Country.Range)
                         } catch (e: Exception) {
-
+                            println("Exception caught: " + e.message)
                         }
                     }
 
-                    country.currencies = Currency.sort(country.currencies)
+                    country.sortCurrencies()
 
                     return country
                 }
                 "currency" -> {
                     val currency = Currency()
+
+                    val start : Int
+                    val end : Int
 
                     if (node.nodeType == Node.ELEMENT_NODE) {
                         val element = node as Element
@@ -1442,13 +1442,19 @@ class NumismatistAPI {
                             currency.symbol = element.getAttribute("symbol")
                         if (element.hasAttribute("symbol_before"))
                             currency.symbolBefore = element.getAttribute("symbol_before").equals("true")
-                        if (element.hasAttribute("start_year"))
-                            currency.yrStart = element.getAttribute("start_year").toInt()
-                        if (element.hasAttribute("end_year"))
-                            currency.yrEnd = element.getAttribute("end_year").toInt()
+                        start = if (element.hasAttribute("yrStart"))
+                            Integer.parseInt(element.getAttribute("yrStart"))
+                        else
+                            Country.Range.YEAR_START_INVALID
+                        end = if (element.hasAttribute("yrEnd"))
+                            Integer.parseInt(element.getAttribute("yrEnd"))
+                        else
+                            Country.Range.YEAR_END_INVALID
+
+                        return Country.Range(currency, start, end)
                     }
 
-                    return currency
+                    return Country.Range()
                 }
                 else -> return ""
             }
