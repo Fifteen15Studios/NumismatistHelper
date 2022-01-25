@@ -169,8 +169,6 @@ class Coin : SetItem()
     private fun setInCoinList(api : NumismatistAPI) {
         if(set == null && !api.getCoins().contains(this))
             api.getCoins().add(this)
-        else
-            api.getCoins().remove(this)
     }
 
     /**

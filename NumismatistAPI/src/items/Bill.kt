@@ -126,8 +126,6 @@ class Bill : SetItem() {
     private fun setInBillList(api : NumismatistAPI) {
         if(set == null && !api.getBills().contains(this))
             api.getBills().add(this)
-        else
-            api.getBills().remove(this)
     }
 
     /**

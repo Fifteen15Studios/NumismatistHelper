@@ -241,8 +241,6 @@ class Set : SetItem() {
     private fun setInSetList(api : NumismatistAPI) {
         if(set == null && !api.getSets().contains(this))
             api.getSets().add(this)
-        else
-            api.getSets().remove(this)
     }
 
     /**
