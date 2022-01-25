@@ -139,7 +139,7 @@ class Set : SetItem() {
         if(id != 0) {
             api.setSet(id, this)
 
-            sql = "UPDATE Sets SET Name=\"${name}\", Yr=${year}, CurValue=${value}, ParentID=$newSetID Note=\"${note}\", " +
+            sql = "UPDATE Sets SET Name=\"${name}\", Yr=${year}, CurValue=${value}, ParentID=$newSetID, Note=\"${api.conditionSqlString(note)}\", " +
                     "ContainerID=$containerID\n" +
                     "WHERE ID=${id};"
 
@@ -152,17 +152,12 @@ class Set : SetItem() {
                 // Add items that have been added
                 for (item in items) {
                     item.set = this
-                    // Remove from list of individual items
-                    items.remove(item)
 
                     rows = item.saveToDb(api)
                     if (rows == -1 && errors == 0) {
                         errors++
                     }
-
                 }
-
-                errors = 0
 
                 for (item in removedItems) {
                     item.set = null
@@ -190,7 +185,7 @@ class Set : SetItem() {
         }
         else {
             sql = "INSERT INTO Sets(Name, Yr, CurValue, ContainerID, ParentID, Note)\n" +
-                    "VALUES(\"${name}\", ${year}, ${value}, $containerID, $newSetID, \"${note}\");"
+                    "VALUES(\"${name}\", ${year}, ${value}, $containerID, $newSetID, \"${api.conditionSqlString(note)}\");"
 
             val rows = api.runUpdate(sql)
 

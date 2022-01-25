@@ -81,7 +81,7 @@ class Bill : SetItem() {
             sql = "UPDATE Bills SET CountryName=\"${countryName}\", CurrencyAbbr=\"${currency.nameAbbr}\", Type=\"${name}\", Yr=${year}, " +
                     "Denomination=${denomination}, CurValue=${value}, Graded=${graded}, Grade=\"${condition}\", " +
                     "SeriesLetter=\"${seriesLetter}\", Serial=\"${serial}\", Signatures=\"${signatures}\", ContainerID=$containerID, " +
-                    "Error=${error}, ErrorType=\"${errorType}\", Note=\"${note}\", SetID=$newSetID, Replacement=${replacement}\n" +
+                    "Error=${error}, ErrorType=\"${errorType}\", Note=\"${api.conditionSqlString(note)}\", SetID=$newSetID, Replacement=${replacement}\n" +
                     "WHERE ID=${id};"
 
             rows = api.runUpdate(sql)
@@ -98,7 +98,7 @@ class Bill : SetItem() {
                     "Error, ErrorType, Serial, Signatures, ContainerID, Note, SetID, Replacement)\n" +
                     "VALUES(\"${countryName}\", \"${currency.nameAbbr}\", \"${name}\", ${year}, \"${seriesLetter}\", ${denomination}, ${value}, " +
                     "${graded}, \"${condition}\", ${error}, \"${errorType}\", \"${serial}\", \"${signatures}\", " +
-                    "$containerID, \"${note}\", $newSetID, ${replacement});"
+                    "$containerID, \"${api.conditionSqlString(note)}\", $newSetID, ${replacement});"
 
             rows = api.runUpdate(sql)
 

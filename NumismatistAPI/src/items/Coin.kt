@@ -92,16 +92,16 @@ class Coin : SetItem()
         val rows: Int
 
         // set SetID to null if necessary
-        val newSetID = if(set == null)
+        val newSetID = if(set == null || set!!.id == ID_INVALID)
             "null"
         else
             "" + set!!.id
 
         // set SlotID to null if necessary
-        val slotID = if(slotId == ID_INVALID)
+        val slotID = if(slot == null)
             "null"
         else
-            "" + slotId
+            "" + slot!!.id
 
         // set ContainerID to null if necessary
         val containerID = if(containerId == ID_INVALID)
@@ -124,7 +124,7 @@ class Coin : SetItem()
             sql = "UPDATE Coins SET CountryName=\"${countryName}\", CurrencyAbbr=\"${currency.nameAbbr}\", Type=\"${name}\", Yr=${year}, " +
                     "Denomination=${denomination}, CurValue=${value}, MintMark=\"${mintMark}\", Graded=${graded}, " +
                     "Grade=\"${condition}\", Error=${error}, ErrorType=\"${errorType}\", SetID=$newSetID, " +
-                    "ObvImgExt=\"$obvImgExt\", RevImgExt=\"$revImgExt\", Note=\"${note}\", SlotID=$slotID, " +
+                    "ObvImgExt=\"$obvImgExt\", RevImgExt=\"$revImgExt\", Note=\"${api.conditionSqlString(note)}\", SlotID=$slotID, " +
                     "ContainerID=$containerID " +
                     "WHERE ID=${id};"
 
@@ -141,7 +141,7 @@ class Coin : SetItem()
             sql = "INSERT INTO Coins(CountryName, CurrencyAbbr, Type, Yr, Denomination, CurValue, MintMark, Graded," +
                     " Grade, Error, ErrorType, SetID, SlotID, ContainerID, ObvImgExt, RevImgExt, Note)\n" +
                     "VALUES(\"${countryName}\", \"${currency.nameAbbr}\", \"${name}\", ${year}, ${denomination}, ${value}, \"${mintMark.uppercase(Locale.ROOT)}\", ${graded}," +
-                    " \"${condition}\", ${error}, \"${errorType}\", $newSetID, $slotID, $containerID, \"$obvImgExt\", \"$revImgExt\", \"${note}\");"
+                    " \"${condition}\", ${error}, \"${errorType}\", $newSetID, $slotID, $containerID, \"$obvImgExt\", \"$revImgExt\", \"${api.conditionSqlString(note)}\");"
 
             rows = api.runUpdate(sql)
 
