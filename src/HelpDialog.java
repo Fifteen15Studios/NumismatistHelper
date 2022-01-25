@@ -49,7 +49,6 @@ public class HelpDialog extends JDialog {
 
         topicsList.addListSelectionListener(e -> {
 
-            // TODO: Use markdown
             int index = topicsList.getSelectedIndex();
             Parser parser = Parser.builder().build();
             Node document;
