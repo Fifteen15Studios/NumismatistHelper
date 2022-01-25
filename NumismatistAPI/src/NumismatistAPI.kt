@@ -361,6 +361,22 @@ class NumismatistAPI {
         connection.disconnect()
     }
 
+    fun conditionSqlString(sql: String) : String {
+        var newSql = sql
+        if(newSql.contains("\\"))
+            newSql = newSql.replace("\\", "\\\\")
+        if(newSql.contains("\'"))
+            newSql = newSql.replace("\'", "\\\'")
+        if(newSql.contains("\""))
+            newSql = newSql.replace("\"", "\\\"")
+        if(newSql.contains("%"))
+            newSql = newSql.replace("%", "\\%")
+        if(newSql.contains("_"))
+            newSql = newSql.replace("_", "\\_")
+
+        return newSql
+    }
+
     /**
      * Queries the database
      *
