@@ -46,7 +46,7 @@ class Set : SetItem() {
     override fun copy() : Set {
         val newSet = Set()
 
-        newSet.id = id
+        newSet.id = ID_INVALID
         newSet.name  = name
         newSet.value = value
         newSet.year = year
@@ -58,13 +58,14 @@ class Set : SetItem() {
 
         // Remove items that are not in this object
         for (item in newSet.items) {
-            if(!items.contains(item))
+            if(!contains(item))
                 newSet.items.remove(item)
         }
 
         // Add all items from this object
         for(item in items) {
             val newItem = item.copy()
+            newItem.set = this
             newSet.addItem(newItem)
         }
 

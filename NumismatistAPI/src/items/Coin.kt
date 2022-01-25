@@ -42,7 +42,7 @@ class Coin : SetItem()
     override fun copy() : Coin {
         val newCoin = Coin()
 
-        newCoin.id = id
+        newCoin.id = ID_INVALID
         newCoin.countryName = countryName
         newCoin.currency = currency
         newCoin.year = year
@@ -53,7 +53,7 @@ class Coin : SetItem()
         newCoin.value = value
         newCoin.note = note
         newCoin.name = name
-        newCoin.set = set
+        newCoin.set = null
 
         newCoin.obvImgPath = obvImgPath
         newCoin.revImgPath = revImgPath
